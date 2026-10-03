@@ -20,7 +20,7 @@
                 overflow: hidden;
                 user-select: none;
                 -webkit-user-select: none;
-                touch-action: manipulation;
+                touch-action: none;
             }
             canvas {
                 image-rendering: pixelated;
@@ -62,8 +62,8 @@
                 font-size: 16px;
                 box-shadow: none;
             }
-            .v-btn:active {
-                background: rgba(255, 255, 255, 0.3);
+            .v-btn.active {
+                background: rgba(255, 255, 255, 0.4);
                 color: #000000;
             }
 
@@ -109,7 +109,7 @@
                 <div class="v-btn w-btn" data-key="52" data-keyname="Digit4">[4]</div>
             </div>
 
-            <!-- İmzamız -->
+            <!-- İmza -->
             <div class="credits-tag">mobile vers by @ptc6 ( Discord )</div>
 
             <!-- ESC / Pause -->
@@ -129,28 +129,23 @@
         </div>
 
         <script type="text/javascript">
-            // 1. Web Audio Kilit Açıcı ve Decrypter Düzeltmesi
             window.addEventListener('DOMContentLoaded', function() {
                 if (typeof Decrypter !== 'undefined') {
                     Decrypter._hasEncryptedAudio = true;
                 }
             });
 
-            // İlk dokunuşta tarayıcı ses motorunu uyandır
             function unlockAudio() {
                 if (typeof WebAudio !== 'undefined' && WebAudio._context && WebAudio._context.state === 'suspended') {
                     WebAudio._context.resume();
                 }
             }
-            window.addEventListener('touchstart', unlockAudio, { once: true });
-            window.addEventListener('click', unlockAudio, { once: true });
 
-            // 2. Güvenli Tuş Tetikleme Mekanizması
-            function triggerKeyEvent(type, keyCode, keyName) {
-                unlockAudio(); // Her tuşta ses durumunu garantiye al
+            function setKeyState(keyCode, keyName, isPressed) {
+                unlockAudio();
 
-                // DOM Klavye Olayı
-                var event = new KeyboardEvent(type, {
+                var eventType = isPressed ? 'keydown' : 'keyup';
+                var event = new KeyboardEvent(eventType, {
                     keyCode: keyCode,
                     which: keyCode,
                     key: keyName,
@@ -160,35 +155,57 @@
                 });
                 document.dispatchEvent(event);
 
-                // RPG Maker MV Input Eşleşmesi
                 if (typeof Input !== 'undefined' && Input._currentState) {
                     var mapper = Input.keyMapper[keyCode];
                     if (mapper) {
-                        Input._currentState[mapper] = (type === 'keydown');
+                        Input._currentState[mapper] = isPressed;
                     }
                 }
             }
 
-            // Tuş Yönetimi
-            document.querySelectorAll('.v-btn[data-key]').forEach(function(btn) {
-                var keyCode = parseInt(btn.getAttribute('data-key'));
-                var keyName = btn.getAttribute('data-keyname');
+            // Gelişmiş Multi-Touch / Çoklu Dokunmatik Motoru
+            var activeTouches = {};
 
-                var startPress = function(e) {
-                    if (e.cancelable) e.preventDefault();
-                    triggerKeyEvent('keydown', keyCode, keyName);
-                };
+            function processTouches(e) {
+                e.preventDefault();
+                var currentPressedKeys = {};
 
-                var endPress = function(e) {
-                    if (e.cancelable) e.preventDefault();
-                    triggerKeyEvent('keyup', keyCode, keyName);
-                };
+                // Ekrandaki tüm aktif dokunma noktalarını tara
+                for (var i = 0; i < e.touches.length; i++) {
+                    var touch = e.touches[i];
+                    var elem = document.elementFromPoint(touch.clientX, touch.clientY);
+                    
+                    if (elem && elem.classList.contains('v-btn') && elem.hasAttribute('data-key')) {
+                        var keyCode = parseInt(elem.getAttribute('data-key'));
+                        var keyName = elem.getAttribute('data-keyname');
+                        currentPressedKeys[keyCode] = { name: keyName, element: elem };
+                    }
+                }
 
-                btn.addEventListener('touchstart', startPress, {passive: false});
-                btn.addEventListener('touchend', endPress, {passive: false});
-                btn.addEventListener('mousedown', startPress);
-                btn.addEventListener('mouseup', endPress);
-            });
+                // Yeni basılan tuşları aktifleştir
+                for (var key in currentPressedKeys) {
+                    if (!activeTouches[key]) {
+                        activeTouches[key] = currentPressedKeys[key];
+                        currentPressedKeys[key].element.classList.add('active');
+                        setKeyState(parseInt(key), currentPressedKeys[key].name, true);
+                    }
+                }
+
+                // Bırakılan tuşları pasifleştir
+                for (var key in activeTouches) {
+                    if (!currentPressedKeys[key]) {
+                        activeTouches[key].element.classList.remove('active');
+                        setKeyState(parseInt(key), activeTouches[key].name, false);
+                        delete activeTouches[key];
+                    }
+                }
+            }
+
+            var container = document.body;
+            container.addEventListener('touchstart', processTouches, {passive: false});
+            container.addEventListener('touchmove', processTouches, {passive: false});
+            container.addEventListener('touchend', processTouches, {passive: false});
+            container.addEventListener('touchcancel', processTouches, {passive: false});
         </script>
 
         <script type="text/javascript" src="js/libs/pixi.js"></script>
