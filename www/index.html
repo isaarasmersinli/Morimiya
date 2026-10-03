@@ -121,25 +121,36 @@
             <div class="v-btn dpad-btn" id="btn-left" data-key="37" data-keyname="ArrowLeft">◄</div>
             <div class="v-btn dpad-btn" id="btn-right" data-key="39" data-keyname="ArrowRight">►</div>
 
-            <!-- Aksiyon Sembolleri (Retro Özel Karakterler) -->
-            <div class="v-btn" id="btn-aim" data-key="69" data-keyname="KeyE">⊕</div>     <!-- E: Nişan (Hedef Ağı) -->
-            <div class="v-btn" id="btn-reload" data-key="82" data-keyname="KeyR">⟳</div>  <!-- R: Mermi Yenileme -->
-            <div class="v-btn" id="btn-shoot" data-key="32" data-keyname="Space">⚔</div>  <!-- SPACE: Ateş / Vurma -->
+            <!-- Aksiyon Sembolleri -->
+            <div class="v-btn" id="btn-aim" data-key="69" data-keyname="KeyE">⊕</div>     <!-- E: Nişan -->
+            <div class="v-btn" id="btn-reload" data-key="82" data-keyname="KeyR">⟳</div>  <!-- R: Reload -->
+            <div class="v-btn" id="btn-shoot" data-key="32" data-keyname="Space">⚔</div>  <!-- SPACE: Ateş -->
             <div class="v-btn" id="btn-shift" data-key="16" data-keyname="ShiftLeft">»</div> <!-- SHIFT: Koşma -->
         </div>
 
         <script type="text/javascript">
-            // Mobil ses desteği
+            // 1. Web Audio Kilit Açıcı ve Decrypter Düzeltmesi
             window.addEventListener('DOMContentLoaded', function() {
                 if (typeof Decrypter !== 'undefined') {
                     Decrypter._hasEncryptedAudio = true;
                 }
             });
 
-            // RPG Maker İçin Doğrudan Klavye Tetikleyici (Silah ve R tuşu düzeltmesi)
+            // İlk dokunuşta tarayıcı ses motorunu uyandır
+            function unlockAudio() {
+                if (typeof WebAudio !== 'undefined' && WebAudio._context && WebAudio._context.state === 'suspended') {
+                    WebAudio._context.resume();
+                }
+            }
+            window.addEventListener('touchstart', unlockAudio, { once: true });
+            window.addEventListener('click', unlockAudio, { once: true });
+
+            // 2. Güvenli Tuş Tetikleme Mekanizması
             function triggerKeyEvent(type, keyCode, keyName) {
-                // Standart DOM Event
-                var event = window.event || new KeyboardEvent(type, {
+                unlockAudio(); // Her tuşta ses durumunu garantiye al
+
+                // DOM Klavye Olayı
+                var event = new KeyboardEvent(type, {
                     keyCode: keyCode,
                     which: keyCode,
                     key: keyName,
@@ -148,9 +159,8 @@
                     cancelable: true
                 });
                 document.dispatchEvent(event);
-                window.dispatchEvent(event);
 
-                // RPG Maker MV Motoru İçin Doğrudan Input Bildirimi
+                // RPG Maker MV Input Eşleşmesi
                 if (typeof Input !== 'undefined' && Input._currentState) {
                     var mapper = Input.keyMapper[keyCode];
                     if (mapper) {
@@ -159,7 +169,7 @@
                 }
             }
 
-            // Tuş Atamaları ve Dokunmatik Yönetim
+            // Tuş Yönetimi
             document.querySelectorAll('.v-btn[data-key]').forEach(function(btn) {
                 var keyCode = parseInt(btn.getAttribute('data-key'));
                 var keyName = btn.getAttribute('data-keyname');
