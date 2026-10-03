@@ -26,7 +26,7 @@
                 image-rendering: pixelated;
             }
 
-            /* --- SANAL KONTROL PANELLERİ --- */
+            /* --- MİNİMALİST MONOKROM ARAYÜZ --- */
             .touch-controls {
                 position: fixed;
                 top: 0;
@@ -35,76 +35,85 @@
                 height: 100%;
                 pointer-events: none;
                 z-index: 9999;
-                font-family: system-ui, -apple-system, sans-serif;
+                font-family: monospace, monospace;
+            }
+
+            .credits-tag {
+                position: absolute;
+                top: 55px;
+                left: 12px;
+                color: rgba(255, 255, 255, 0.4);
+                font-size: 10px;
+                letter-spacing: 0.5px;
+                pointer-events: none;
             }
 
             .v-btn {
                 position: absolute;
                 pointer-events: auto;
-                background: rgba(255, 255, 255, 0.18);
-                border: 2px solid rgba(255, 255, 255, 0.4);
-                color: white;
-                border-radius: 50%;
+                background: rgba(0, 0, 0, 0.5);
+                border: 1px solid rgba(255, 255, 255, 0.4);
+                color: #ffffff;
+                border-radius: 4px;
                 display: flex;
                 align-items: center;
                 justify-content: center;
                 font-weight: bold;
-                font-size: 22px;
-                backdrop-filter: blur(5px);
-                -webkit-backdrop-filter: blur(5px);
-                box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+                font-size: 16px;
+                box-shadow: none;
             }
             .v-btn:active {
-                background: rgba(255, 255, 255, 0.5);
-                transform: scale(0.92);
+                background: rgba(255, 255, 255, 0.3);
+                color: #000000;
             }
 
-            /* Yön Tuşları (D-Pad - Sol Alt) */
-            .dpad-btn { border-radius: 12px; width: 48px; height: 48px; font-size: 18px; }
-            #btn-up    { bottom: 105px; left: 60px;  }
-            #btn-down  { bottom: 10px;  left: 60px;  }
-            #btn-left  { bottom: 58px;  left: 12px;  }
-            #btn-right { bottom: 58px;  left: 108px; }
+            /* Yön Tuşları */
+            .dpad-btn { width: 44px; height: 44px; font-size: 14px; }
+            #btn-up    { bottom: 100px; left: 56px;  }
+            #btn-down  { bottom: 10px;  left: 56px;  }
+            #btn-left  { bottom: 55px;  left: 10px;  }
+            #btn-right { bottom: 55px;  left: 102px; }
 
-            /* Aksiyon Tuşları (Sağ Alt) */
-            #btn-shoot { bottom: 15px; right: 80px; width: 68px; height: 68px; background: rgba(230, 40, 40, 0.4); border-color: rgba(255, 120, 120, 0.6); font-size: 26px; } /* SPACE - Vurma (Ateş) */
-            #btn-aim   { bottom: 85px; right: 20px; width: 60px; height: 60px; background: rgba(230, 160, 20, 0.4); border-color: rgba(255, 210, 100, 0.6); font-size: 24px; } /* E - Nişan */
-            #btn-shift { bottom: 10px; right: 12px; width: 55px; height: 55px; background: rgba(40, 140, 240, 0.4); border-color: rgba(120, 190, 255, 0.6); font-size: 22px; } /* SHIFT - Koşma */
+            /* Aksiyon Tuşları */
+            #btn-shoot { bottom: 15px; right: 80px; width: 60px; height: 60px; font-size: 20px; } /* SPACE - Vurma */
+            #btn-aim   { bottom: 85px; right: 20px; width: 52px; height: 52px; font-size: 18px; } /* E - Nişan */
+            #btn-reload{ bottom: 85px; right: 80px; width: 52px; height: 52px; font-size: 15px; } /* R - Reload */
+            #btn-shift { bottom: 15px; right: 15px; width: 52px; height: 52px; font-size: 14px; } /* SHIFT - Koşma */
 
-            /* Üst Panel (Durdurma & Silahlar) */
-            #btn-esc   { top: 10px; right: 12px; width: 48px; height: 48px; border-radius: 12px; background: rgba(180, 40, 40, 0.5); font-size: 20px; } /* ESC - Pause */
+            /* Üst Panel */
+            #btn-esc   { top: 10px; right: 10px; width: 44px; height: 38px; font-size: 12px; }
             
             .weapon-bar {
                 position: absolute;
                 top: 10px;
                 left: 10px;
                 display: flex;
-                gap: 8px;
+                gap: 6px;
                 pointer-events: auto;
             }
             .w-btn {
-                width: 42px;
-                height: 42px;
-                border-radius: 10px;
-                font-size: 15px;
-                background: rgba(0, 0, 0, 0.4);
+                width: 38px;
+                height: 38px;
+                font-size: 13px;
             }
         </style>
     </head>
     <body>
 
-        <!-- Dokunmatik Tuş Katmanı -->
         <div class="touch-controls">
-            <!-- Silah Geçişleri (1, 2, 3, 4) -->
+            <!-- Silah Seçimi (1, 2, 3, 4) -->
             <div class="weapon-bar">
-                <div class="v-btn w-btn" onclick="sendKey(49, '1')">🔫1</div>
-                <div class="v-btn w-btn" onclick="sendKey(50, '2')">🔫2</div>
-                <div class="v-btn w-btn" onclick="sendKey(51, '3')">🔫3</div>
-                <div class="v-btn w-btn" onclick="sendKey(52, '4')">🔫4</div>
+                <div class="v-btn w-btn" data-key="49" data-keyname="Digit1">[1]</div>
+                <div class="v-btn w-btn" data-key="50" data-keyname="Digit2">[2]</div>
+                <div class="v-btn w-btn" data-key="51" data-keyname="Digit3">[3]</div>
+                <div class="v-btn w-btn" data-key="52" data-keyname="Digit4">[4]</div>
             </div>
 
+            <!-- İmzamız -->
+            <div class="credits-tag">mobile vers by @ptc6 ( Discord )</div>
+
             <!-- ESC / Pause -->
-            <div class="v-btn" id="btn-esc" onclick="sendKey(27, 'Escape')">⏸️</div>
+            <div class="v-btn" id="btn-esc" data-key="27" data-keyname="Escape">ESC</div>
 
             <!-- Yön Tuşları -->
             <div class="v-btn dpad-btn" id="btn-up" data-key="38" data-keyname="ArrowUp">▲</div>
@@ -112,10 +121,11 @@
             <div class="v-btn dpad-btn" id="btn-left" data-key="37" data-keyname="ArrowLeft">◄</div>
             <div class="v-btn dpad-btn" id="btn-right" data-key="39" data-keyname="ArrowRight">►</div>
 
-            <!-- Aksiyon Sembolleri -->
-            <div class="v-btn" id="btn-aim" data-key="69" data-keyname="KeyE">🎯</div>      <!-- E: Nişan Alma -->
-            <div class="v-btn" id="btn-shoot" data-key="32" data-keyname="Space">💥</div>   <!-- SPACE: Vurma / Ateş -->
-            <div class="v-btn" id="btn-shift" data-key="16" data-keyname="ShiftLeft">⚡</div> <!-- SHIFT: Koşma -->
+            <!-- Aksiyon Sembolleri (Retro Özel Karakterler) -->
+            <div class="v-btn" id="btn-aim" data-key="69" data-keyname="KeyE">⊕</div>     <!-- E: Nişan (Hedef Ağı) -->
+            <div class="v-btn" id="btn-reload" data-key="82" data-keyname="KeyR">⟳</div>  <!-- R: Mermi Yenileme -->
+            <div class="v-btn" id="btn-shoot" data-key="32" data-keyname="Space">⚔</div>  <!-- SPACE: Ateş / Vurma -->
+            <div class="v-btn" id="btn-shift" data-key="16" data-keyname="ShiftLeft">»</div> <!-- SHIFT: Koşma -->
         </div>
 
         <script type="text/javascript">
@@ -126,39 +136,42 @@
                 }
             });
 
-            // Sanal Tuş Basma Mekanizması
-            function simulateKeyEvent(type, keyCode, key) {
-                var event = new KeyboardEvent(type, {
+            // RPG Maker İçin Doğrudan Klavye Tetikleyici (Silah ve R tuşu düzeltmesi)
+            function triggerKeyEvent(type, keyCode, keyName) {
+                // Standart DOM Event
+                var event = window.event || new KeyboardEvent(type, {
                     keyCode: keyCode,
                     which: keyCode,
-                    key: key,
+                    key: keyName,
+                    code: keyName,
                     bubbles: true,
                     cancelable: true
                 });
                 document.dispatchEvent(event);
+                window.dispatchEvent(event);
+
+                // RPG Maker MV Motoru İçin Doğrudan Input Bildirimi
+                if (typeof Input !== 'undefined' && Input._currentState) {
+                    var mapper = Input.keyMapper[keyCode];
+                    if (mapper) {
+                        Input._currentState[mapper] = (type === 'keydown');
+                    }
+                }
             }
 
-            // Tek Tık (Silahlar, Pause)
-            function sendKey(keyCode, key) {
-                simulateKeyEvent('keydown', keyCode, key);
-                setTimeout(function() {
-                    simulateKeyEvent('keyup', keyCode, key);
-                }, 100);
-            }
-
-            // Basılı Tutmalı Tuşlar (Yönler, Nişan, Vurma, Koşma)
+            // Tuş Atamaları ve Dokunmatik Yönetim
             document.querySelectorAll('.v-btn[data-key]').forEach(function(btn) {
                 var keyCode = parseInt(btn.getAttribute('data-key'));
                 var keyName = btn.getAttribute('data-keyname');
 
                 var startPress = function(e) {
-                    e.preventDefault();
-                    simulateKeyEvent('keydown', keyCode, keyName);
+                    if (e.cancelable) e.preventDefault();
+                    triggerKeyEvent('keydown', keyCode, keyName);
                 };
 
                 var endPress = function(e) {
-                    e.preventDefault();
-                    simulateKeyEvent('keyup', keyCode, keyName);
+                    if (e.cancelable) e.preventDefault();
+                    triggerKeyEvent('keyup', keyCode, keyName);
                 };
 
                 btn.addEventListener('touchstart', startPress, {passive: false});
