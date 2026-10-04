@@ -63,45 +63,62 @@
                 height: 100%;
                 pointer-events: none;
                 z-index: 9999;
-                font-family: sans-serif;
+                font-family: Arial, sans-serif;
             }
 
-            /* İçi Tamamen Şeffaf, Sadece Beyaz İnce Halkalı Butonlar */
+            /* Genel Şeffaf Halka Buton Tasarımı */
             .v-btn {
                 position: absolute;
                 pointer-events: auto;
-                background: transparent !important;
+                background: rgba(255, 255, 255, 0.05) !important;
                 border: 1.5px solid rgba(255, 255, 255, 0.5) !important;
-                color: rgba(255, 255, 255, 0.85) !important;
+                color: rgba(255, 255, 255, 0.9) !important;
                 border-radius: 50% !important;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                font-weight: normal;
-                font-size: 16px;
+                font-weight: bold;
+                font-size: 15px;
                 box-shadow: none;
                 -webkit-tap-highlight-color: transparent;
                 box-sizing: border-box;
             }
 
             .v-btn.active {
-                background: rgba(255, 255, 255, 0.25) !important;
+                background: rgba(255, 255, 255, 0.3) !important;
                 border-color: #ffffff !important;
                 color: #ffffff !important;
             }
 
+            /* VURMA/ATEŞ TUŞU (Koyu Kırmızı ve Hafif Şeffaf) */
+            #btn-attack {
+                bottom: 110px;
+                right: 110px;
+                width: 72px;
+                height: 72px;
+                font-size: 16px;
+                background: rgba(139, 0, 0, 0.4) !important; /* Koyu kırmızı şeffaf */
+                border: 2px solid rgba(255, 75, 75, 0.7) !important;
+                color: #ffffff !important;
+            }
+
+            #btn-attack.active {
+                background: rgba(200, 0, 0, 0.7) !important;
+                border-color: #ffffff !important;
+            }
+
             /* HAREKET TUŞLARI (SOL ALT D-PAD) */
             .move-btn {
-                width: 50px;
-                height: 50px;
-                font-size: 18px;
+                width: 52px;
+                height: 52px;
+                font-size: 20px;
             }
-            #btn-move-up    { bottom: 110px; left: 60px;  }
-            #btn-move-down  { bottom: 10px;  left: 60px;  }
-            #btn-move-left  { bottom: 60px;  left: 10px;  }
-            #btn-move-right { bottom: 60px;  left: 110px; }
+            #btn-move-up    { bottom: 114px; left: 62px;  }
+            #btn-move-down  { bottom: 10px;  left: 62px;  }
+            #btn-move-left  { bottom: 62px;  left: 10px;  }
+            #btn-move-right { bottom: 62px;  left: 114px; }
 
-            /* SOL ÜST SİLAH DEĞİŞTİRME OKLARI (BİRAZ DAHA AŞAĞI ALINDI) */
+            /* SOL ÜST SİLAH DEĞİŞTİRME OKLARI */
             .weapon-switch-btn {
                 width: 44px;
                 height: 44px;
@@ -110,13 +127,12 @@
             #btn-weapon-prev { top: 60px; left: 15px; }
             #btn-weapon-next { top: 60px; left: 68px; }
 
-            /* SOL ALT EK BUTONLAR (L, LT, RT) */
-            #btn-l       { bottom: 110px; left: 175px; width: 50px; height: 50px; }
-            #btn-lt      { bottom: 50px;  left: 175px; width: 50px; height: 50px; }
-            #btn-rt-left { bottom: 50px;  left: 235px; width: 50px; height: 50px; }
+            /* SOL ALT KOŞMA (SHIFT) VE DİĞER EK TUŞLAR */
+            #btn-shift   { bottom: 110px; left: 180px; width: 52px; height: 52px; font-size: 11px; }
+            #btn-lt      { bottom: 50px;  left: 180px; width: 50px; height: 50px; }
+            #btn-rt-left { bottom: 50px;  left: 238px; width: 50px; height: 50px; }
 
             /* SAĞ TARAF AKSİYON TUŞLARI */
-            #btn-rt-right{ bottom: 110px; right: 110px; width: 72px; height: 72px; font-size: 22px; }
             #btn-r       { bottom: 180px; right: 80px;  width: 52px; height: 52px; }
             #btn-b       { bottom: 110px; right: 25px;  width: 52px; height: 52px; }
             #btn-a       { bottom: 45px;  right: 80px;  width: 52px; height: 52px; }
@@ -130,23 +146,23 @@
     <body>
 
         <div class="touch-controls" id="touch-controls">
-            <!-- Sol Üst: Silah Değiştirme Okları (Biraz Daha Aşağıda) -->
+            <!-- Sol Üst: Silah Değiştirme Okları -->
             <div class="v-btn weapon-switch-btn" id="btn-weapon-prev">◄</div>
             <div class="v-btn weapon-switch-btn" id="btn-weapon-next">►</div>
 
-            <!-- Sol Alt: Oyun İçi Karakter Hareket Tuşları (D-Pad) -->
+            <!-- Sol Alt: Karakter Hareket Tuşları (D-Pad) -->
             <div class="v-btn move-btn" id="btn-move-up" data-key="38" data-keyname="ArrowUp">▲</div>
             <div class="v-btn move-btn" id="btn-move-down" data-key="40" data-keyname="ArrowDown">▼</div>
             <div class="v-btn move-btn" id="btn-move-left" data-key="37" data-keyname="ArrowLeft">◄</div>
             <div class="v-btn move-btn" id="btn-move-right" data-key="39" data-keyname="ArrowRight">►</div>
 
-            <!-- Sol Yan Ek Halka Tuşlar -->
-            <div class="v-btn" id="btn-l">L</div>
-            <div class="v-btn" id="btn-lt">LT</div>
-            <div class="v-btn" id="btn-rt-left">RT</div>
+            <!-- Sol Yan: SHIFT (Koşma) ve Ek Tuşlar -->
+            <div class="v-btn" id="btn-shift" data-key="16" data-keyname="ShiftLeft">SHIFT</div>
+            <div class="v-btn" id="btn-lt" data-key="17" data-keyname="ControlLeft">CTRL</div>
+            <div class="v-btn" id="btn-rt-left" data-key="18" data-keyname="AltLeft">ALT</div>
 
-            <!-- Sağ Taraf Dairesel Aksiyon Tuşları -->
-            <div class="v-btn" id="btn-rt-right" data-key="32" data-keyname="Space">⚔</div>
+            <!-- Sağ Taraf: Vurma Tuşu ve Aksiyon Tuşları -->
+            <div class="v-btn" id="btn-attack" data-key="32" data-keyname="Space">VUR</div>
             <div class="v-btn" id="btn-r" data-key="82" data-keyname="KeyR">R</div>
             <div class="v-btn" id="btn-b" data-key="27" data-keyname="Escape">B</div>
             <div class="v-btn" id="btn-a" data-key="13" data-keyname="Enter">A</div>
@@ -229,7 +245,7 @@
                 }, 100);
             }
 
-            // --- Dokunma ve Kaydırma (Touchmove) Algılama ---
+            // --- Kesin Dokunma ve Sürükleme (Touch Tracking) Mantığı ---
             var activeTouches = {};
 
             function getButtonFromPoint(x, y) {
@@ -268,15 +284,16 @@
                 e.preventDefault();
                 unlockAudioEngine();
 
-                var currentTouchIds = {};
+                var currentTouchMap = {};
 
                 for (var i = 0; i < e.touches.length; i++) {
                     var touch = e.touches[i];
                     var id = touch.identifier;
                     var btn = getButtonFromPoint(touch.clientX, touch.clientY);
 
-                    currentTouchIds[id] = btn;
+                    currentTouchMap[id] = btn;
 
+                    // Eğer parmak farklı bir butonun üstüne kaydıysa
                     if (activeTouches[id] !== btn) {
                         if (activeTouches[id]) {
                             releaseButton(activeTouches[id]);
@@ -288,8 +305,9 @@
                     }
                 }
 
+                // Parmağını ekrandan kaldıranları temizle
                 for (var id in activeTouches) {
-                    if (!currentTouchIds[id]) {
+                    if (!currentTouchMap[id]) {
                         if (activeTouches[id]) {
                             releaseButton(activeTouches[id]);
                         }
