@@ -3,6 +3,12 @@
 var $plugins =
 [
   {
+    "name": "DecryptPatch",
+    "status": true,
+    "description": "Otomatik Sifre Cozucu",
+    "parameters": {}
+  },
+  {
     "name": "Community_Basic",
     "status": true,
     "description": "基本的なパラメーターを設定するプラグインです。",
