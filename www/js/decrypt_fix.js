@@ -13,17 +13,15 @@
         Decrypter._headerArray = new Uint8Array(keyArray);
     }
 
-    // --- RESİM DEŞİFRELEME VE ÇÖKME KORUMASI ---
-    var _Bitmap_load = Bitmap.load;
-    Bitmap.load = function(url) {
-        var baseUrl = url.replace(/\.(png|rpgmvp)$/i, '');
+    // --- RESİM YÜKLEME YAMASI (BITMAP NULL HATASINI KESİN ÇÖZER) ---
+    var _ImageManager_loadNormalBitmap = ImageManager.loadNormalBitmap;
+    ImageManager.loadNormalBitmap = function(path, hue) {
+        var baseUrl = path.replace(/\.(png|rpgmvp)$/i, '');
         var encryptedUrl = baseUrl + '.rpgmvp';
         var normalUrl = baseUrl + '.png';
 
-        var bitmap = Object.create(Bitmap.prototype);
-        bitmap._defer = true;
-        bitmap.initialize();
-        bitmap._url = url;
+        // RPG Maker'ın orijinal Bitmap nesnesini başlat
+        var bitmap = _ImageManager_loadNormalBitmap.call(this, normalUrl, hue);
 
         var xhr = new XMLHttpRequest();
         xhr.open('GET', encryptedUrl);
@@ -32,28 +30,15 @@
             if (xhr.status < 400) {
                 var arrayBuffer = Decrypter.decryptArrayBuffer(xhr.response);
                 var blob = new Blob([arrayBuffer], { type: 'image/png' });
-                if (bitmap && bitmap._image) {
-                    bitmap._image.src = URL.createObjectURL(blob);
-                }
-            } else {
-                if (bitmap && bitmap._image) {
-                    bitmap._image.src = normalUrl;
-                }
-            }
-        };
-        xhr.onerror = function() {
-            if (bitmap && bitmap._image) {
-                bitmap._image.src = normalUrl;
+                bitmap._image.src = URL.createObjectURL(blob);
             }
         };
         xhr.send();
 
-        bitmap._image.onload = Bitmap.prototype._onLoad.bind(bitmap);
-        bitmap._image.onerror = Bitmap.prototype._onError.bind(bitmap);
         return bitmap;
     };
 
-    // --- SES DEŞİFRELEME ---
+    // --- SES DEŞİFRELEME (XOR + HEADER CUT) ---
     var _WebAudio_prototype_initialize = WebAudio.prototype.initialize;
     WebAudio.prototype.initialize = function(url) {
         if (url && !url.match(/\.(rpgmvo|rpgmvm)$/i)) {
@@ -101,4 +86,5 @@
         return body;
     };
 
+    console.log("Morimiya stabil yükleme yaması yüklendi.");
 })();
