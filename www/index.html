@@ -10,6 +10,14 @@
         <link rel="apple-touch-icon" href="icon/icon.png">
         <link rel="shortcut icon" href="icon/icon.png">
         <link rel="stylesheet" type="text/css" href="fonts/gamefont.css">
+        
+        <!-- TARAYICI ENJEKSİYON HATALARINI ENGELLEYEN KORUMA -->
+        <script type="text/javascript">
+            if (typeof window.__firefox__ === 'undefined') {
+                window.__firefox__ = { reader: {} };
+            }
+        </script>
+
         <style type="text/css">
             html, body {
                 background-color: black;
@@ -73,6 +81,7 @@
                 font-weight: bold;
                 font-size: 15px;
                 box-shadow: none;
+                -webkit-tap-highlight-color: transparent;
             }
             .v-btn.active {
                 background: rgba(255, 255, 255, 0.4);
@@ -91,8 +100,8 @@
             #btn-left  { bottom: 57px;   left: 10px;  }
             #btn-right { bottom: 57px;   left: 102px; }
 
-            /* KOŞMA TUŞU (Aralıklı / Mesafeli Konum) */
-            #btn-shift { bottom: 120px; left: 120px; width: 44px; height: 44px; font-size: 14px; }
+            /* KOŞMA TUŞU (Yön Tuşlarının Sağ Üstü) */
+            #btn-shift { bottom: 104px; left: 102px; width: 46px; height: 46px; font-size: 14px; }
 
             /* Aksiyon Tuşları (Sağ Alt) */
             #btn-shoot { bottom: 15px; right: 85px; width: 62px; height: 62px; font-size: 20px; } /* SPACE */
@@ -204,69 +213,56 @@
                 }
             }
 
-            // SÜREKLİ KOŞMA (TOGGLE SHIFT)
+            // DOKUNMATİK TIKLAMA YÖNETİMİ
+            var buttons = document.querySelectorAll('.v-btn');
             var isAutoRunning = false;
-            var shiftBtn = document.getElementById('btn-shift');
 
-            function toggleAutoRun() {
-                isAutoRunning = !isAutoRunning;
-                setKeyState(16, 'ShiftLeft', isAutoRunning);
-                if (isAutoRunning) {
-                    shiftBtn.classList.add('toggle-on');
-                } else {
-                    shiftBtn.classList.remove('toggle-on');
-                }
-            }
-
-            shiftBtn.addEventListener('touchstart', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                toggleAutoRun();
-            }, {passive: false});
-
-            // ÇOKLU DOKUNMA (MULTI-TOUCH) İŞLEYİCİSİ
-            var activeTouches = {};
-
-            function processTouches(e) {
-                e.preventDefault();
-                unlockAudioEngine();
-                var currentPressedKeys = {};
-
-                for (var i = 0; i < e.touches.length; i++) {
-                    var touch = e.touches[i];
-                    var elem = document.elementFromPoint(touch.clientX, touch.clientY);
+            buttons.forEach(function(btn) {
+                btn.addEventListener('touchstart', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
                     
-                    if (elem && elem.id === 'btn-shift') continue;
+                    var keyCode = parseInt(btn.getAttribute('data-key'));
+                    var keyName = btn.getAttribute('data-keyname');
 
-                    if (elem && elem.classList.contains('v-btn') && elem.hasAttribute('data-key')) {
-                        var keyCode = parseInt(elem.getAttribute('data-key'));
-                        var keyName = elem.getAttribute('data-keyname');
-                        currentPressedKeys[keyCode] = { name: keyName, element: elem };
+                    if (btn.id === 'btn-shift') {
+                        isAutoRunning = !isAutoRunning;
+                        setKeyState(16, 'ShiftLeft', isAutoRunning);
+                        if (isAutoRunning) {
+                            btn.classList.add('toggle-on');
+                        } else {
+                            btn.classList.remove('toggle-on');
+                        }
+                    } else if (keyCode) {
+                        btn.classList.add('active');
+                        setKeyState(keyCode, keyName, true);
                     }
-                }
+                }, {passive: false});
 
-                for (var key in currentPressedKeys) {
-                    if (!activeTouches[key]) {
-                        activeTouches[key] = currentPressedKeys[key];
-                        currentPressedKeys[key].element.classList.add('active');
-                        setKeyState(parseInt(key), currentPressedKeys[key].name, true);
+                btn.addEventListener('touchend', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    var keyCode = parseInt(btn.getAttribute('data-key'));
+                    var keyName = btn.getAttribute('data-keyname');
+
+                    if (btn.id !== 'btn-shift' && keyCode) {
+                        btn.classList.remove('active');
+                        setKeyState(keyCode, keyName, false);
                     }
-                }
+                }, {passive: false});
 
-                for (var key in activeTouches) {
-                    if (!currentPressedKeys[key]) {
-                        activeTouches[key].element.classList.remove('active');
-                        setKeyState(parseInt(key), activeTouches[key].name, false);
-                        delete activeTouches[key];
+                btn.addEventListener('touchcancel', function(e) {
+                    var keyCode = parseInt(btn.getAttribute('data-key'));
+                    var keyName = btn.getAttribute('data-keyname');
+
+                    if (btn.id !== 'btn-shift' && keyCode) {
+                        btn.classList.remove('active');
+                        setKeyState(keyCode, keyName, false);
                     }
-                }
-            }
+                }, {passive: false});
+            });
 
-            var container = document.body;
-            container.addEventListener('touchstart', processTouches, {passive: false});
-            container.addEventListener('touchmove', processTouches, {passive: false});
-            container.addEventListener('touchend', processTouches, {passive: false});
-            container.addEventListener('touchcancel', processTouches, {passive: false});
             window.addEventListener('click', unlockAudioEngine, {once: true});
         </script>
 
