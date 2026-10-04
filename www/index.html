@@ -23,7 +23,7 @@
                 touch-action: none;
             }
             
-            /* --- KANVAS BOYUTUNU EKRANA YAYMA (TAM EKRAN) --- */
+            /* --- TAM EKRAN CANVAS --- */
             #GameCanvas, canvas {
                 position: absolute !important;
                 top: 0 !important;
@@ -91,20 +91,20 @@
             #btn-left  { bottom: 57px;   left: 10px;  }
             #btn-right { bottom: 57px;   left: 102px; }
 
-            /* KOŞMA TUŞU (Yön tuşlarının hemen sağ üstüne yapışık) */
-            #btn-shift { bottom: 104px; left: 102px; width: 46px; height: 46px; font-size: 14px; }
+            /* KOŞMA TUŞU (Yön tuşlarının biraz daha uzağına, boşluklu yerleştirildi) */
+            #btn-shift { bottom: 120px; left: 120px; width: 44px; height: 44px; font-size: 14px; }
 
             /* Aksiyon Tuşları (Sağ Alt) */
             #btn-shoot { bottom: 15px; right: 85px; width: 62px; height: 62px; font-size: 20px; } /* SPACE */
             #btn-aim   { bottom: 90px; right: 20px; width: 54px; height: 54px; font-size: 18px; } /* E */
             #btn-reload{ bottom: 90px; right: 85px; width: 54px; height: 54px; font-size: 15px; } /* R */
 
-            /* Üst Panel: ETKİLEŞİM, F2 (MENU) & ESC */
+            /* Üst Panel: OK, F2 (MENU) & ESC */
             #btn-interact { top: 10px; right: 125px; width: 80px; height: 40px; font-size: 12px; border-color: rgba(255, 255, 255, 0.8); background: rgba(30, 30, 30, 0.8); }
             #btn-f2       { top: 10px; right: 65px;  width: 55px; height: 40px; font-size: 11px; background: rgba(20, 20, 20, 0.8); }
             #btn-esc      { top: 10px; right: 10px;  width: 50px; height: 40px; font-size: 11px; }
 
-            /* DİKEY SİLAH SEÇİM ÇUBUĞU (Sol Üst, Alt Alta) */
+            /* DİKEY SİLAH SEÇİM ÇUBUĞU (Sol Üst) */
             .weapon-bar-vertical {
                 position: absolute;
                 top: 10px;
@@ -125,7 +125,7 @@
     <body>
 
         <div class="touch-controls">
-            <!-- Dikey Silah Seçimi (Sol Üst: 1, 2, 3, 4, 5 Alt Alta) -->
+            <!-- Dikey Silah Seçimi -->
             <div class="weapon-bar-vertical">
                 <div class="v-btn w-btn" data-key="49" data-keyname="Digit1">[1]</div>
                 <div class="v-btn w-btn" data-key="50" data-keyname="Digit2">[2]</div>
@@ -137,7 +137,7 @@
             <!-- İmza -->
             <div class="credits-tag">mobile vers by @ptc6 ( Discord )</div>
 
-            <!-- Sağ Üst Panel: OK, F2 (Menü) & ESC -->
+            <!-- Sağ Üst Panel -->
             <div class="v-btn" id="btn-interact" data-key="13" data-keyname="Enter">⏎ OK</div>
             <div class="v-btn" id="btn-f2" data-key="113" data-keyname="F2">≡ MENU</div>
             <div class="v-btn" id="btn-esc" data-key="27" data-keyname="Escape">ESC</div>
@@ -148,7 +148,7 @@
             <div class="v-btn dpad-btn" id="btn-left" data-key="37" data-keyname="ArrowLeft">◄</div>
             <div class="v-btn dpad-btn" id="btn-right" data-key="39" data-keyname="ArrowRight">►</div>
 
-            <!-- Yön Tuşlarının Sağ Üstünde Otomatik Koşma (Toggle Shift) -->
+            <!-- Otomatik Koşma (Toggle Shift - Boşluklu Konum) -->
             <div class="v-btn" id="btn-shift" data-key="16" data-keyname="ShiftLeft">»</div>
 
             <!-- Aksiyon Tuşları -->
@@ -173,33 +173,22 @@
         <script type="text/javascript" src="js/plugins.js"></script>
 
         <script type="text/javascript">
-            // MANUEL DECRYPTION (ŞİFRE ÇÖZME) YAMASI
-            (function() {
+            // ŞİFRE ÇÖZME ANAHTARI ENTEGRASYONU
+            window.addEventListener('load', function() {
                 var KEY = "cbf45b48176a036e58bd338a2b8f326d";
-
-                function setupEncryption() {
-                    if (typeof Decrypter !== 'undefined') {
-                        Decrypter.hasEncryptedImages = true;
-                        Decrypter.hasEncryptedAudio = true;
-                        Decrypter._encryptionKey = KEY;
-                        if (typeof Decrypter.SIGNATURE === 'undefined') {
-                            Decrypter.SIGNATURE = "5250474d56000000";
-                            Decrypter.VER = "000301";
-                            Decrypter.REMAIN = "0000000000000000";
-                        }
-                    }
+                if (typeof $dataSystem !== 'undefined' && $dataSystem) {
+                    $dataSystem.hasEncryptedImages = true;
+                    $dataSystem.hasEncryptedAudio = true;
+                    $dataSystem.encryptionKey = KEY;
                 }
+                if (typeof Decrypter !== 'undefined') {
+                    Decrypter.hasEncryptedImages = true;
+                    Decrypter.hasEncryptedAudio = true;
+                    Decrypter._encryptionKey = KEY;
+                }
+            });
 
-                setupEncryption();
-
-                var _DataManager_setup = DataManager.setup;
-                DataManager.setup = function(data) {
-                    if (_DataManager_setup) _DataManager_setup.call(this, data);
-                    setupEncryption();
-                };
-            })();
-
-            // SES KİLİDİ AÇICI VE KONTROLLER
+            // SES SÜRÜCÜSÜ KİLİT AÇICI
             function unlockAudioEngine() {
                 if (typeof WebAudio !== 'undefined' && WebAudio._context) {
                     if (WebAudio._context.state === 'suspended') {
@@ -230,7 +219,7 @@
                 }
             }
 
-            // SÜREKLİ KOŞMA (TOGGLE SHIFT) MANTIĞI
+            // SÜREKLİ KOŞMA (TOGGLE SHIFT)
             var isAutoRunning = false;
             var shiftBtn = document.getElementById('btn-shift');
 
@@ -250,7 +239,7 @@
                 toggleAutoRun();
             }, {passive: false});
 
-            // Çoklu Dokunma (Multi-Touch) İşleyicisi
+            // Çoklu Dokunma İşleyicisi
             var activeTouches = {};
 
             function processTouches(e) {
@@ -262,7 +251,6 @@
                     var touch = e.touches[i];
                     var elem = document.elementFromPoint(touch.clientX, touch.clientY);
                     
-                    // Shift tuşunu dokunma listesinden hariç tut (Toggle mantığıyla ayrı çalışacak)
                     if (elem && elem.id === 'btn-shift') continue;
 
                     if (elem && elem.classList.contains('v-btn') && elem.hasAttribute('data-key')) {
