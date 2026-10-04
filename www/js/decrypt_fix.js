@@ -1,6 +1,7 @@
 (function() {
     var ENCRYPTION_KEY = "cbf45b48176a036e58bd338a2b8f326d"; 
 
+    // RPG Maker şifreleme motorunu zorla aktif et
     Decrypter.hasEncryptedAudio = true;
     Decrypter.hasEncryptedImages = true;
     Decrypter._encryptionKey = ENCRYPTION_KEY;
@@ -13,14 +14,13 @@
         Decrypter._headerArray = new Uint8Array(keyArray);
     }
 
-    // --- RESİM YÜKLEME YAMASI (BITMAP NULL HATASINI KESİN ÇÖZER) ---
+    // --- RESİM YÜKLEME ---
     var _ImageManager_loadNormalBitmap = ImageManager.loadNormalBitmap;
     ImageManager.loadNormalBitmap = function(path, hue) {
         var baseUrl = path.replace(/\.(png|rpgmvp)$/i, '');
         var encryptedUrl = baseUrl + '.rpgmvp';
         var normalUrl = baseUrl + '.png';
 
-        // RPG Maker'ın orijinal Bitmap nesnesini başlat
         var bitmap = _ImageManager_loadNormalBitmap.call(this, normalUrl, hue);
 
         var xhr = new XMLHttpRequest();
@@ -38,7 +38,7 @@
         return bitmap;
     };
 
-    // --- SES DEŞİFRELEME (XOR + HEADER CUT) ---
+    // --- SES YÜKLEME VE DOKUNMATİK UYUMU ---
     var _WebAudio_prototype_initialize = WebAudio.prototype.initialize;
     WebAudio.prototype.initialize = function(url) {
         if (url && !url.match(/\.(rpgmvo|rpgmvm)$/i)) {
@@ -64,7 +64,7 @@
                 } else {
                     this._hasError = true;
                 }
-            }.bind(this);
+            }.bind(this); // <-- 'this' bağlamı düzeltildi
             xhr.onerror = this._onError.bind(this);
             xhr.send();
         }
@@ -86,5 +86,4 @@
         return body;
     };
 
-    console.log("Morimiya stabil yükleme yaması yüklendi.");
 })();
