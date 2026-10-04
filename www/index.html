@@ -100,16 +100,18 @@
             #btn-left  { bottom: 57px;   left: 10px;  }
             #btn-right { bottom: 57px;   left: 102px; }
 
-            /* KOŞMA TUŞU (Yön Tuşlarının Sağ Üstü) */
-            #btn-shift { bottom: 104px; left: 102px; width: 46px; height: 46px; font-size: 14px; }
+            /* KOŞMA TUŞU (Yön tuşlarının sağ üstü) */
+            #btn-shift { bottom: 120px; left: 115px; width: 44px; height: 44px; font-size: 14px; }
 
             /* Aksiyon Tuşları (Sağ Alt) */
             #btn-shoot { bottom: 15px; right: 85px; width: 62px; height: 62px; font-size: 20px; } /* SPACE */
             #btn-aim   { bottom: 90px; right: 20px; width: 54px; height: 54px; font-size: 18px; } /* E */
             #btn-reload{ bottom: 90px; right: 85px; width: 54px; height: 54px; font-size: 15px; } /* R */
 
-            /* Üst Panel: OK, F2 (MENU) & ESC */
-            #btn-interact { top: 10px; right: 125px; width: 80px; height: 40px; font-size: 12px; border-color: rgba(255, 255, 255, 0.8); background: rgba(30, 30, 30, 0.8); }
+            /* OK (ENTER) TUŞU (Sağ Taraf - Aksiyon Tuşlarının Üstü) */
+            #btn-interact { bottom: 160px; right: 20px; width: 75px; height: 45px; font-size: 13px; border-color: rgba(255, 255, 255, 0.8); background: rgba(30, 30, 30, 0.85); }
+
+            /* Üst Panel: F2 (MENU) & ESC */
             #btn-f2       { top: 10px; right: 65px;  width: 55px; height: 40px; font-size: 11px; background: rgba(20, 20, 20, 0.8); }
             #btn-esc      { top: 10px; right: 10px;  width: 50px; height: 40px; font-size: 11px; }
 
@@ -147,7 +149,6 @@
             <div class="credits-tag">mobile vers by @ptc6 ( Discord )</div>
 
             <!-- Sağ Üst Panel -->
-            <div class="v-btn" id="btn-interact" data-key="13" data-keyname="Enter">⏎ OK</div>
             <div class="v-btn" id="btn-f2" data-key="113" data-keyname="F2">≡ MENU</div>
             <div class="v-btn" id="btn-esc" data-key="27" data-keyname="Escape">ESC</div>
 
@@ -160,7 +161,8 @@
             <!-- Otomatik Koşma (Toggle Shift) -->
             <div class="v-btn" id="btn-shift" data-key="16" data-keyname="ShiftLeft">»</div>
 
-            <!-- Aksiyon Tuşları -->
+            <!-- Aksiyon Tuşları ve OK Tuşu -->
+            <div class="v-btn" id="btn-interact" data-key="13" data-keyname="Enter">⏎ OK</div>
             <div class="v-btn" id="btn-aim" data-key="69" data-keyname="KeyE">⊕</div>
             <div class="v-btn" id="btn-reload" data-key="82" data-keyname="KeyR">⟳</div>
             <div class="v-btn" id="btn-shoot" data-key="32" data-keyname="Space">⚔</div>
@@ -182,11 +184,16 @@
         <script type="text/javascript" src="js/plugins.js"></script>
 
         <script type="text/javascript">
-            // SES SÜRÜCÜSÜ KİLİT AÇICI (iOS İçin)
+            // --- KESİNTİSİZ SES SÜRÜCÜSÜ KİLİT AÇICI ---
             function unlockAudioEngine() {
                 if (typeof WebAudio !== 'undefined' && WebAudio._context) {
-                    if (WebAudio._context.state === 'suspended') {
+                    if (WebAudio._context.state === 'suspended' || WebAudio._context.state === 'interrupted') {
                         WebAudio._context.resume();
+                    }
+                }
+                if (typeof AudioManager !== 'undefined') {
+                    if (AudioManager._bgmBuffer && !AudioManager._bgmBuffer.isPlaying()) {
+                        AudioManager.checkErrors();
                     }
                 }
             }
@@ -213,19 +220,63 @@
                 }
             }
 
-            // DOKUNMATİK TIKLAMA YÖNETİMİ
-            var buttons = document.querySelectorAll('.v-btn');
+            // --- GELİŞMİŞ ÇOKLU DOKUNMA VE SÜRÜKLEME TESPİTİ ---
+            var activeTouchMap = {}; // Parmak ID'sine göre basılı tutulan butonları izler
             var isAutoRunning = false;
 
-            buttons.forEach(function(btn) {
-                btn.addEventListener('touchstart', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    
+            function processTouch(touch) {
+                var elem = document.elementFromPoint(touch.clientX, touch.clientY);
+                if (elem && elem.classList.contains('v-btn')) {
+                    return elem;
+                }
+                return null;
+            }
+
+            function updateTouches(e) {
+                e.preventDefault();
+                unlockAudioEngine();
+
+                var currentPressedButtons = {};
+
+                // Aktif tüm parmak dokunuşlarını tara
+                for (var i = 0; i < e.touches.length; i++) {
+                    var touch = e.touches[i];
+                    var btn = processTouch(touch);
+                    if (btn) {
+                        currentPressedButtons[btn.id || btn.getAttribute('data-key')] = btn;
+                    }
+                }
+
+                // Önceden basılı olup şu an parmak altında olmayan tuşları bırak (KeyUp)
+                var buttons = document.querySelectorAll('.v-btn');
+                buttons.forEach(function(btn) {
+                    var btnId = btn.id || btn.getAttribute('data-key');
                     var keyCode = parseInt(btn.getAttribute('data-key'));
                     var keyName = btn.getAttribute('data-keyname');
 
-                    if (btn.id === 'btn-shift') {
+                    if (btn.id === 'btn-shift') return; // Shift toggle modunda bağımsız çalışır
+
+                    if (currentPressedButtons[btnId]) {
+                        if (!btn.classList.contains('active')) {
+                            btn.classList.add('active');
+                            if (keyCode) setKeyState(keyCode, keyName, true);
+                        }
+                    } else {
+                        if (btn.classList.contains('active')) {
+                            btn.classList.remove('active');
+                            if (keyCode) setKeyState(keyCode, keyName, false);
+                        }
+                    }
+                });
+            }
+
+            // Dokunmatik Etkinliklerini Dinle
+            window.addEventListener('touchstart', function(e) {
+                // Shift (Koşma) için özel dokunma kontrolü
+                for (var i = 0; i < e.changedTouches.length; i++) {
+                    var touch = e.changedTouches[i];
+                    var btn = processTouch(touch);
+                    if (btn && btn.id === 'btn-shift') {
                         isAutoRunning = !isAutoRunning;
                         setKeyState(16, 'ShiftLeft', isAutoRunning);
                         if (isAutoRunning) {
@@ -233,37 +284,24 @@
                         } else {
                             btn.classList.remove('toggle-on');
                         }
-                    } else if (keyCode) {
-                        btn.classList.add('active');
-                        setKeyState(keyCode, keyName, true);
                     }
-                }, {passive: false});
+                }
+                updateTouches(e);
+            }, {passive: false});
 
-                btn.addEventListener('touchend', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
+            window.addEventListener('touchmove', updateTouches, {passive: false});
+            
+            window.addEventListener('touchend', function(e) {
+                updateTouches(e);
+            }, {passive: false});
 
-                    var keyCode = parseInt(btn.getAttribute('data-key'));
-                    var keyName = btn.getAttribute('data-keyname');
+            window.addEventListener('touchcancel', function(e) {
+                updateTouches(e);
+            }, {passive: false});
 
-                    if (btn.id !== 'btn-shift' && keyCode) {
-                        btn.classList.remove('active');
-                        setKeyState(keyCode, keyName, false);
-                    }
-                }, {passive: false});
-
-                btn.addEventListener('touchcancel', function(e) {
-                    var keyCode = parseInt(btn.getAttribute('data-key'));
-                    var keyName = btn.getAttribute('data-keyname');
-
-                    if (btn.id !== 'btn-shift' && keyCode) {
-                        btn.classList.remove('active');
-                        setKeyState(keyCode, keyName, false);
-                    }
-                }, {passive: false});
-            });
-
-            window.addEventListener('click', unlockAudioEngine, {once: true});
+            // Ekranın herhangi bir yerine tıklayınca sesi zorla aç
+            window.addEventListener('click', unlockAudioEngine);
+            window.addEventListener('touchstart', unlockAudioEngine);
         </script>
 
         <script type="text/javascript" src="js/main.js"></script>
