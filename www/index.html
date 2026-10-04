@@ -55,26 +55,6 @@
                 pointer-events: none !important;
             }
 
-            /* SESİ AÇMAK İÇİN İLK DOKUNUŞ KATMANI */
-            #audio-unlock-overlay {
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100vw;
-                height: 100vh;
-                background: rgba(0, 0, 0, 0.7);
-                z-index: 999999;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                color: #ffffff;
-                font-family: monospace;
-                font-size: 16px;
-                font-weight: bold;
-                text-align: center;
-                cursor: pointer;
-            }
-
             .touch-controls {
                 position: fixed;
                 top: 0;
@@ -171,11 +151,6 @@
     </head>
     <body>
 
-        <!-- Sadece 1 Kez Tıklanıp Sesi Açan Katman -->
-        <div id="audio-unlock-overlay">
-            🔊 Sesi Açmak İçin Ekrana Dokunun
-        </div>
-
         <div class="touch-controls" id="touch-controls">
             <!-- Dikey Silah Seçimi -->
             <div class="weapon-bar-vertical">
@@ -212,8 +187,6 @@
         <script type="text/javascript" src="js/libs/lz-string.js"></script>
         <script type="text/javascript" src="js/libs/iphone-inline-video.browser.js"></script>
         <script type="text/javascript" src="js/rpg_core.js"></script>
-        <!-- CANLI SES DEŞİFRE MODÜLÜ -->
-        <script type="text/javascript" src="js/decrypt_fix.js"></script>
         <script type="text/javascript" src="js/rpg_managers.js"></script>
         <script type="text/javascript" src="js/rpg_objects.js"></script>
         <script type="text/javascript" src="js/rpg_scenes.js"></script>
@@ -231,29 +204,6 @@
                 TouchInput._onTouchStart = function() {};
                 TouchInput._onTouchMove = function() {};
                 TouchInput.update = function() {};
-            }
-
-            function unlockAudioEngine() {
-                if (typeof WebAudio !== 'undefined' && WebAudio._context) {
-                    if (WebAudio._context.state === 'suspended' || WebAudio._context.state === 'interrupted') {
-                        WebAudio._context.resume();
-                    }
-                }
-            }
-
-            // Sadece İlk Dokunuşta Sesi Açan ve Katmanı Siltiren Mekanizma
-            var overlay = document.getElementById('audio-unlock-overlay');
-            function handleFirstTouch(e) {
-                unlockAudioEngine();
-                if (overlay) {
-                    overlay.remove(); // Katmanı tamamen yok et
-                }
-                window.removeEventListener('touchstart', handleFirstTouch);
-                window.removeEventListener('click', handleFirstTouch);
-            }
-            if (overlay) {
-                overlay.addEventListener('touchstart', handleFirstTouch, {passive: false});
-                overlay.addEventListener('click', handleFirstTouch);
             }
 
             function setKeyState(keyCode, keyName, isPressed) {
