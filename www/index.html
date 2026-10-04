@@ -22,7 +22,18 @@
                 -webkit-user-select: none;
                 touch-action: none;
             }
-            canvas {
+            
+            /* --- KANVAS BOYUTUNU EKRANA YAYMA (TAM EKRAN) --- */
+            #GameCanvas, canvas {
+                position: absolute !important;
+                top: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                bottom: 0 !important;
+                margin: auto !important;
+                width: 100vw !important;
+                height: 100vh !important;
+                object-fit: contain !important;
                 image-rendering: pixelated;
             }
 
@@ -68,20 +79,20 @@
             }
 
             /* Yön Tuşları */
-            .dpad-btn { width: 44px; height: 44px; font-size: 14px; }
-            #btn-up    { bottom: 100px; left: 56px;  }
-            #btn-down  { bottom: 10px;  left: 56px;  }
-            #btn-left  { bottom: 55px;  left: 10px;  }
-            #btn-right { bottom: 55px;  left: 102px; }
+            .dpad-btn { width: 48px; height: 48px; font-size: 15px; }
+            #btn-up    { bottom: 108px; left: 58px;  }
+            #btn-down  { bottom: 10px;   left: 58px;  }
+            #btn-left  { bottom: 59px;   left: 10px;  }
+            #btn-right { bottom: 59px;   left: 106px; }
 
             /* Aksiyon Tuşları (Sağ Alt) */
-            #btn-shoot { bottom: 15px; right: 80px; width: 60px; height: 60px; font-size: 20px; } /* SPACE - Ateş / Vurma */
-            #btn-aim   { bottom: 85px; right: 20px; width: 52px; height: 52px; font-size: 18px; } /* E - Nişan */
-            #btn-reload{ bottom: 85px; right: 80px; width: 52px; height: 52px; font-size: 15px; } /* R - Şarjör Yenileme */
-            #btn-shift { bottom: 15px; right: 15px; width: 52px; height: 52px; font-size: 14px; } /* SHIFT - Koşma */
+            #btn-shoot { bottom: 15px; right: 85px; width: 62px; height: 62px; font-size: 20px; } /* SPACE */
+            #btn-aim   { bottom: 90px; right: 20px; width: 54px; height: 54px; font-size: 18px; } /* E */
+            #btn-reload{ bottom: 90px; right: 85px; width: 54px; height: 54px; font-size: 15px; } /* R */
+            #btn-shift { bottom: 15px; right: 15px; width: 54px; height: 54px; font-size: 14px; } /* SHIFT */
 
-            /* Üst Panel: BÜYÜK ETKİLEŞİM & ESC */
-            #btn-interact { top: 10px; right: 65px; width: 90px; height: 42px; font-size: 13px; border-color: rgba(255, 255, 255, 0.8); background: rgba(30, 30, 30, 0.8); }
+            /* Üst Panel: ETKİLEŞİM & ESC */
+            #btn-interact { top: 10px; right: 65px; width: 95px; height: 42px; font-size: 13px; border-color: rgba(255, 255, 255, 0.8); background: rgba(30, 30, 30, 0.8); }
             #btn-esc      { top: 10px; right: 10px; width: 48px; height: 42px; font-size: 12px; }
 
             /* Silah Seçim Çubuğu (1, 2, 3, 4, 5) */
@@ -94,7 +105,7 @@
                 pointer-events: auto;
             }
             .w-btn {
-                width: 36px;
+                width: 38px;
                 height: 38px;
                 font-size: 13px;
             }
@@ -115,7 +126,7 @@
             <!-- İmza -->
             <div class="credits-tag">mobile vers by @ptc6 ( Discord )</div>
 
-            <!-- Sağ Üst Panel: BÜYÜK ETKİLEŞİM (Enter) & ESC -->
+            <!-- Sağ Üst Panel -->
             <div class="v-btn" id="btn-interact" data-key="13" data-keyname="Enter">⏎ OK</div>
             <div class="v-btn" id="btn-esc" data-key="27" data-keyname="Escape">ESC</div>
 
@@ -132,7 +143,7 @@
             <div class="v-btn" id="btn-shift" data-key="16" data-keyname="ShiftLeft">»</div>
         </div>
 
-        <!-- RPG Maker Temel Motor Kütüphaneleri -->
+        <!-- RPG Maker Temel Kütüphaneleri -->
         <script type="text/javascript" src="js/libs/pixi.js"></script>
         <script type="text/javascript" src="js/libs/pixi-tilemap.js"></script>
         <script type="text/javascript" src="js/libs/pixi-picture.js"></script>
@@ -148,7 +159,34 @@
         <script type="text/javascript" src="js/plugins.js"></script>
 
         <script type="text/javascript">
-            // SAFARİ / MOBİL KONTROL VE SES SÜRÜCÜSÜ
+            // MANUEL DECRYPTION (ŞİFRE ÇÖZME) YAMASI
+            (function() {
+                var KEY = "cbf45b48176a036e58bd338a2b8f326d";
+
+                function setupEncryption() {
+                    if (typeof Decrypter !== 'undefined') {
+                        Decrypter.hasEncryptedImages = true;
+                        Decrypter.hasEncryptedAudio = true;
+                        Decrypter._encryptionKey = KEY;
+                        if (typeof Decrypter.SIGNATURE === 'undefined') {
+                            Decrypter.SIGNATURE = "5250474d56000000";
+                            Decrypter.VER = "000301";
+                            Decrypter.REMAIN = "0000000000000000";
+                        }
+                    }
+                }
+
+                setupEncryption();
+
+                // System.json yüklendikten sonra silinmesini engeller
+                var _DataManager_setup = DataManager.setup;
+                DataManager.setup = function(data) {
+                    if (_DataManager_setup) _DataManager_setup.call(this, data);
+                    setupEncryption();
+                };
+            })();
+
+            // SES KİLİDİ AÇICI VE KONTROLLER
             function unlockAudioEngine() {
                 if (typeof WebAudio !== 'undefined' && WebAudio._context) {
                     if (WebAudio._context.state === 'suspended') {
@@ -179,7 +217,7 @@
                 }
             }
 
-            // Çoklu Dokunma (Multi-touch) İşleyicisi
+            // Çoklu Dokunma (Multi-Touch) İşleyicisi
             var activeTouches = {};
 
             function processTouches(e) {
