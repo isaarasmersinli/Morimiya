@@ -4,8 +4,12 @@
         <meta charset="UTF-8">
         <meta name="apple-mobile-web-app-capable" content="yes">
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+        <meta name="apple-mobile-web-app-title" content="Morimiya">
         <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height">
         <title>森宮中学校</title>
+        
+        <!-- PWA / UYGULAMA YAPISI İÇİN BAĞLANTILAR -->
+        <link rel="manifest" href="manifest.json">
         <link rel="icon" href="icon/icon.png" type="image/png">
         <link rel="apple-touch-icon" href="icon/icon.png">
         <link rel="shortcut icon" href="icon/icon.png">
@@ -15,6 +19,15 @@
         <script type="text/javascript">
             if (typeof window.__firefox__ === 'undefined') {
                 window.__firefox__ = { reader: {} };
+            }
+
+            // Service Worker Kaydı (Çevrimdışı Çalışma İçin)
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('./sw.js').catch((err) => {
+                        console.log('SW hatası:', err);
+                    });
+                });
             }
         </script>
 
@@ -43,6 +56,7 @@
                 height: 100vh !important;
                 object-fit: contain !important;
                 image-rendering: pixelated;
+                pointer-events: auto !important; /* Oyun alanına dokunabilmeyi sağladık */
             }
 
             /* --- DOKUNMATİK ARAYÜZ --- */
@@ -104,11 +118,11 @@
             #btn-shift { bottom: 120px; left: 115px; width: 44px; height: 44px; font-size: 14px; }
 
             /* Aksiyon Tuşları (Sağ Alt) */
-            #btn-shoot { bottom: 15px; right: 85px; width: 62px; height: 62px; font-size: 20px; } /* SPACE */
-            #btn-aim   { bottom: 90px; right: 20px; width: 54px; height: 54px; font-size: 18px; } /* E */
-            #btn-reload{ bottom: 90px; right: 85px; width: 54px; height: 54px; font-size: 15px; } /* R */
+            #btn-shoot { bottom: 15px; right: 85px; width: 62px; height: 62px; font-size: 20px; }
+            #btn-aim   { bottom: 90px; right: 20px; width: 54px; height: 54px; font-size: 18px; }
+            #btn-reload{ bottom: 90px; right: 85px; width: 54px; height: 54px; font-size: 15px; }
 
-            /* OK (ENTER) TUŞU (Sağ Taraf - Aksiyon Tuşlarının Üstü) */
+            /* OK (ENTER) TUŞU */
             #btn-interact { bottom: 160px; right: 20px; width: 75px; height: 45px; font-size: 13px; border-color: rgba(255, 255, 255, 0.8); background: rgba(30, 30, 30, 0.85); }
 
             /* Üst Panel: F2 (MENU) & ESC */
@@ -184,16 +198,28 @@
         <script type="text/javascript" src="js/plugins.js"></script>
 
         <script type="text/javascript">
+            // --- SADECE OYUN ÇERÇEVESİNE (CANVAS) DOKUNMA YÖNETİMİ ---
+            if (typeof TouchInput !== 'undefined') {
+                var originalOnTrigger = TouchInput._onTrigger;
+                TouchInput._onTrigger = function(x, y) {
+                    var canvas = document.querySelector('canvas');
+                    if (canvas) {
+                        var rect = canvas.getBoundingClientRect();
+                        // Eğer dokunma noktası ortadaki oyun ekranının (canvas) içindeyse çalıştır
+                        if (x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom) {
+                            if (originalOnTrigger) originalOnTrigger.call(this, x, y);
+                            return;
+                        }
+                    }
+                    // Siyah alanlara veya butonlara basıldıysa yürümeyi engelle
+                };
+            }
+
             // --- KESİNTİSİZ SES SÜRÜCÜSÜ KİLİT AÇICI ---
             function unlockAudioEngine() {
                 if (typeof WebAudio !== 'undefined' && WebAudio._context) {
                     if (WebAudio._context.state === 'suspended' || WebAudio._context.state === 'interrupted') {
                         WebAudio._context.resume();
-                    }
-                }
-                if (typeof AudioManager !== 'undefined') {
-                    if (AudioManager._bgmBuffer && !AudioManager._bgmBuffer.isPlaying()) {
-                        AudioManager.checkErrors();
                     }
                 }
             }
@@ -221,7 +247,6 @@
             }
 
             // --- GELİŞMİŞ ÇOKLU DOKUNMA VE SÜRÜKLEME TESPİTİ ---
-            var activeTouchMap = {}; // Parmak ID'sine göre basılı tutulan butonları izler
             var isAutoRunning = false;
 
             function processTouch(touch) {
@@ -238,7 +263,6 @@
 
                 var currentPressedButtons = {};
 
-                // Aktif tüm parmak dokunuşlarını tara
                 for (var i = 0; i < e.touches.length; i++) {
                     var touch = e.touches[i];
                     var btn = processTouch(touch);
@@ -247,14 +271,13 @@
                     }
                 }
 
-                // Önceden basılı olup şu an parmak altında olmayan tuşları bırak (KeyUp)
                 var buttons = document.querySelectorAll('.v-btn');
                 buttons.forEach(function(btn) {
                     var btnId = btn.id || btn.getAttribute('data-key');
                     var keyCode = parseInt(btn.getAttribute('data-key'));
                     var keyName = btn.getAttribute('data-keyname');
 
-                    if (btn.id === 'btn-shift') return; // Shift toggle modunda bağımsız çalışır
+                    if (btn.id === 'btn-shift') return;
 
                     if (currentPressedButtons[btnId]) {
                         if (!btn.classList.contains('active')) {
@@ -270,9 +293,7 @@
                 });
             }
 
-            // Dokunmatik Etkinliklerini Dinle
             window.addEventListener('touchstart', function(e) {
-                // Shift (Koşma) için özel dokunma kontrolü
                 for (var i = 0; i < e.changedTouches.length; i++) {
                     var touch = e.changedTouches[i];
                     var btn = processTouch(touch);
@@ -290,16 +311,9 @@
             }, {passive: false});
 
             window.addEventListener('touchmove', updateTouches, {passive: false});
-            
-            window.addEventListener('touchend', function(e) {
-                updateTouches(e);
-            }, {passive: false});
+            window.addEventListener('touchend', updateTouches, {passive: false});
+            window.addEventListener('touchcancel', updateTouches, {passive: false});
 
-            window.addEventListener('touchcancel', function(e) {
-                updateTouches(e);
-            }, {passive: false});
-
-            // Ekranın herhangi bir yerine tıklayınca sesi zorla aç
             window.addEventListener('click', unlockAudioEngine);
             window.addEventListener('touchstart', unlockAudioEngine);
         </script>
