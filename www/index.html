@@ -129,20 +129,29 @@
         </div>
 
         <script type="text/javascript">
+            // Mobil Ses Motoru Kilidini Açma
+            function unlockAudioEngine() {
+                if (typeof WebAudio !== 'undefined') {
+                    if (WebAudio._context && WebAudio._context.state === 'suspended') {
+                        WebAudio._context.resume();
+                    }
+                    if (WebAudio._unlocked === false && WebAudio._onTouchStart) {
+                        WebAudio._onTouchStart();
+                    }
+                }
+                if (typeof AudioManager !== 'undefined') {
+                    AudioManager.checkErrors();
+                }
+            }
+
             window.addEventListener('DOMContentLoaded', function() {
                 if (typeof Decrypter !== 'undefined') {
                     Decrypter._hasEncryptedAudio = true;
                 }
             });
 
-            function unlockAudio() {
-                if (typeof WebAudio !== 'undefined' && WebAudio._context && WebAudio._context.state === 'suspended') {
-                    WebAudio._context.resume();
-                }
-            }
-
             function setKeyState(keyCode, keyName, isPressed) {
-                unlockAudio();
+                unlockAudioEngine();
 
                 var eventType = isPressed ? 'keydown' : 'keyup';
                 var event = new KeyboardEvent(eventType, {
@@ -163,14 +172,14 @@
                 }
             }
 
-            // Gelişmiş Multi-Touch / Çoklu Dokunmatik Motoru
+            // Multi-Touch Motoru
             var activeTouches = {};
 
             function processTouches(e) {
                 e.preventDefault();
+                unlockAudioEngine();
                 var currentPressedKeys = {};
 
-                // Ekrandaki tüm aktif dokunma noktalarını tara
                 for (var i = 0; i < e.touches.length; i++) {
                     var touch = e.touches[i];
                     var elem = document.elementFromPoint(touch.clientX, touch.clientY);
@@ -182,7 +191,6 @@
                     }
                 }
 
-                // Yeni basılan tuşları aktifleştir
                 for (var key in currentPressedKeys) {
                     if (!activeTouches[key]) {
                         activeTouches[key] = currentPressedKeys[key];
@@ -191,7 +199,6 @@
                     }
                 }
 
-                // Bırakılan tuşları pasifleştir
                 for (var key in activeTouches) {
                     if (!currentPressedKeys[key]) {
                         activeTouches[key].element.classList.remove('active');
@@ -206,6 +213,7 @@
             container.addEventListener('touchmove', processTouches, {passive: false});
             container.addEventListener('touchend', processTouches, {passive: false});
             container.addEventListener('touchcancel', processTouches, {passive: false});
+            window.addEventListener('click', unlockAudioEngine, {once: true});
         </script>
 
         <script type="text/javascript" src="js/libs/pixi.js"></script>
