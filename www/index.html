@@ -21,7 +21,7 @@
                 window.__firefox__ = { reader: {} };
             }
 
-            // Service Worker Kaydı (Çevrimdışı Çalışma İçin)
+            // Service Worker Kaydı
             if ('serviceWorker' in navigator) {
                 window.addEventListener('load', () => {
                     navigator.serviceWorker.register('./sw.js').catch((err) => {
@@ -56,7 +56,7 @@
                 height: 100vh !important;
                 object-fit: contain !important;
                 image-rendering: pixelated;
-                pointer-events: auto !important; /* Oyun alanına dokunabilmeyi sağladık */
+                pointer-events: auto !important;
             }
 
             /* --- DOKUNMATİK ARAYÜZ --- */
@@ -114,22 +114,22 @@
             #btn-left  { bottom: 57px;   left: 10px;  }
             #btn-right { bottom: 57px;   left: 102px; }
 
-            /* KOŞMA TUŞU (Yön tuşlarının sağ üstü) */
+            /* KOŞMA TUŞU */
             #btn-shift { bottom: 120px; left: 115px; width: 44px; height: 44px; font-size: 14px; }
 
-            /* Aksiyon Tuşları (Sağ Alt) */
+            /* Aksiyon Tuşları */
             #btn-shoot { bottom: 15px; right: 85px; width: 62px; height: 62px; font-size: 20px; }
             #btn-aim   { bottom: 90px; right: 20px; width: 54px; height: 54px; font-size: 18px; }
             #btn-reload{ bottom: 90px; right: 85px; width: 54px; height: 54px; font-size: 15px; }
 
-            /* OK (ENTER) TUŞU */
+            /* OK TUŞU */
             #btn-interact { bottom: 160px; right: 20px; width: 75px; height: 45px; font-size: 13px; border-color: rgba(255, 255, 255, 0.8); background: rgba(30, 30, 30, 0.85); }
 
-            /* Üst Panel: F2 (MENU) & ESC */
+            /* Üst Panel */
             #btn-f2       { top: 10px; right: 65px;  width: 55px; height: 40px; font-size: 11px; background: rgba(20, 20, 20, 0.8); }
             #btn-esc      { top: 10px; right: 10px;  width: 50px; height: 40px; font-size: 11px; }
 
-            /* DİKEY SİLAH SEÇİM ÇUBUĞU (Sol Üst) */
+            /* DİKEY SİLAH SEÇİMİ */
             .weapon-bar-vertical {
                 position: absolute;
                 top: 10px;
@@ -172,10 +172,10 @@
             <div class="v-btn dpad-btn" id="btn-left" data-key="37" data-keyname="ArrowLeft">◄</div>
             <div class="v-btn dpad-btn" id="btn-right" data-key="39" data-keyname="ArrowRight">►</div>
 
-            <!-- Otomatik Koşma (Toggle Shift) -->
+            <!-- Otomatik Koşma -->
             <div class="v-btn" id="btn-shift" data-key="16" data-keyname="ShiftLeft">»</div>
 
-            <!-- Aksiyon Tuşları ve OK Tuşu -->
+            <!-- Aksiyon Tuşları -->
             <div class="v-btn" id="btn-interact" data-key="13" data-keyname="Enter">⏎ OK</div>
             <div class="v-btn" id="btn-aim" data-key="69" data-keyname="KeyE">⊕</div>
             <div class="v-btn" id="btn-reload" data-key="82" data-keyname="KeyR">⟳</div>
@@ -198,20 +198,42 @@
         <script type="text/javascript" src="js/plugins.js"></script>
 
         <script type="text/javascript">
-            // --- SADECE OYUN ÇERÇEVESİNE (CANVAS) DOKUNMA YÖNETİMİ ---
+            // --- OYUN KARE EKRANINA ÖZEL DOKUNMA KOORDİNATI DÖNÜŞTÜRÜCÜSÜ ---
+            if (typeof Graphics !== 'undefined') {
+                Graphics.pageToCanvasX = function(x) {
+                    var canvas = this._canvas;
+                    if (!canvas) return 0;
+                    var rect = canvas.getBoundingClientRect();
+                    return (x - rect.left) * (canvas.width / rect.width);
+                };
+
+                Graphics.pageToCanvasY = function(y) {
+                    var canvas = this._canvas;
+                    if (!canvas) return 0;
+                    var rect = canvas.getBoundingClientRect();
+                    return (y - rect.top) * (canvas.height / rect.height);
+                };
+            }
+
             if (typeof TouchInput !== 'undefined') {
                 var originalOnTrigger = TouchInput._onTrigger;
                 TouchInput._onTrigger = function(x, y) {
                     var canvas = document.querySelector('canvas');
                     if (canvas) {
                         var rect = canvas.getBoundingClientRect();
-                        // Eğer dokunma noktası ortadaki oyun ekranının (canvas) içindeyse çalıştır
+                        // Yalnızca ortadaki oyun karesine dokunulduğunda algıla
                         if (x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom) {
-                            if (originalOnTrigger) originalOnTrigger.call(this, x, y);
+                            var canvasX = (x - rect.left) * (canvas.width / rect.width);
+                            var canvasY = (y - rect.top) * (canvas.height / rect.height);
+                            
+                            this._x = canvasX;
+                            this._y = canvasY;
+                            this._date = Date.now();
+                            this._mousePressed = true;
+                            this._screenPressed = true;
                             return;
                         }
                     }
-                    // Siyah alanlara veya butonlara basıldıysa yürümeyi engelle
                 };
             }
 
@@ -258,17 +280,22 @@
             }
 
             function updateTouches(e) {
-                e.preventDefault();
                 unlockAudioEngine();
 
                 var currentPressedButtons = {};
+                var touchedVirtualButton = false;
 
                 for (var i = 0; i < e.touches.length; i++) {
                     var touch = e.touches[i];
                     var btn = processTouch(touch);
                     if (btn) {
+                        touchedVirtualButton = true;
                         currentPressedButtons[btn.id || btn.getAttribute('data-key')] = btn;
                     }
+                }
+
+                if (touchedVirtualButton) {
+                    e.preventDefault();
                 }
 
                 var buttons = document.querySelectorAll('.v-btn');
