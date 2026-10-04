@@ -55,6 +55,26 @@
                 pointer-events: none !important;
             }
 
+            /* SESİ AÇMAK İÇİN İLK DOKUNUŞ KATMANI */
+            #audio-unlock-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+                background: rgba(0, 0, 0, 0.7);
+                z-index: 999999;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: #ffffff;
+                font-family: monospace;
+                font-size: 16px;
+                font-weight: bold;
+                text-align: center;
+                cursor: pointer;
+            }
+
             .touch-controls {
                 position: fixed;
                 top: 0;
@@ -151,6 +171,11 @@
     </head>
     <body>
 
+        <!-- Sadece 1 Kez Tıklanıp Sesi Açan Katman -->
+        <div id="audio-unlock-overlay">
+            🔊 Sesi Açmak İçin Ekrana Dokunun
+        </div>
+
         <div class="touch-controls" id="touch-controls">
             <!-- Dikey Silah Seçimi -->
             <div class="weapon-bar-vertical">
@@ -216,9 +241,22 @@
                 }
             }
 
-            function setKeyState(keyCode, keyName, isPressed) {
+            // Sadece İlk Dokunuşta Sesi Açan ve Katmanı Siltiren Mekanizma
+            var overlay = document.getElementById('audio-unlock-overlay');
+            function handleFirstTouch(e) {
                 unlockAudioEngine();
+                if (overlay) {
+                    overlay.remove(); // Katmanı tamamen yok et
+                }
+                window.removeEventListener('touchstart', handleFirstTouch);
+                window.removeEventListener('click', handleFirstTouch);
+            }
+            if (overlay) {
+                overlay.addEventListener('touchstart', handleFirstTouch, {passive: false});
+                overlay.addEventListener('click', handleFirstTouch);
+            }
 
+            function setKeyState(keyCode, keyName, isPressed) {
                 var eventType = isPressed ? 'keydown' : 'keyup';
                 var event = new KeyboardEvent(eventType, {
                     keyCode: keyCode,
@@ -272,7 +310,6 @@
 
             function updateTouches(e) {
                 e.preventDefault();
-                unlockAudioEngine();
 
                 var currentPressedButtons = {};
 
@@ -326,9 +363,6 @@
             window.addEventListener('touchmove', updateTouches, {passive: false});
             window.addEventListener('touchend', updateTouches, {passive: false});
             window.addEventListener('touchcancel', updateTouches, {passive: false});
-
-            window.addEventListener('click', unlockAudioEngine);
-            window.addEventListener('touchstart', unlockAudioEngine);
         </script>
 
         <script type="text/javascript" src="js/main.js"></script>
