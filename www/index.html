@@ -26,7 +26,7 @@
                 image-rendering: pixelated;
             }
 
-            /* --- MONOKROM DOKUNMATİK ARAYÜZ --- */
+            /* --- DOKUNMATİK ARAYÜZ --- */
             .touch-controls {
                 position: fixed;
                 top: 0;
@@ -80,8 +80,8 @@
             #btn-reload{ bottom: 85px; right: 80px; width: 52px; height: 52px; font-size: 15px; } /* R - Reload */
             #btn-shift { bottom: 15px; right: 15px; width: 52px; height: 52px; font-size: 14px; } /* SHIFT - Koşma */
 
-            /* Üst Panel & Etkileşim Tuşu */
-            #btn-interact { top: 10px; right: 65px; width: 85px; height: 42px; font-size: 13px; border-color: rgba(255, 255, 255, 0.8); background: rgba(30, 30, 30, 0.8); } /* BÜYÜK ETKİLEŞİM TUŞU */
+            /* Üst Panel: BÜYÜK ETKİLEŞİM & ESC */
+            #btn-interact { top: 10px; right: 65px; width: 85px; height: 42px; font-size: 13px; border-color: rgba(255, 255, 255, 0.8); background: rgba(30, 30, 30, 0.8); }
             #btn-esc      { top: 10px; right: 10px; width: 48px; height: 42px; font-size: 12px; }
 
             /* Silah Seçim Çubuğu (1, 2, 3, 4, 5) */
@@ -115,7 +115,7 @@
             <!-- İmza -->
             <div class="credits-tag">mobile vers by @ptc6 ( Discord )</div>
 
-            <!-- Sağ Üst Panel: BÜYÜK ETKİLEŞİM & ESC -->
+            <!-- Sağ Üst Panel -->
             <div class="v-btn" id="btn-interact" data-key="13" data-keyname="Enter">⏎ OK</div>
             <div class="v-btn" id="btn-esc" data-key="27" data-keyname="Escape">ESC</div>
 
@@ -125,13 +125,14 @@
             <div class="v-btn dpad-btn" id="btn-left" data-key="37" data-keyname="ArrowLeft">◄</div>
             <div class="v-btn dpad-btn" id="btn-right" data-key="39" data-keyname="ArrowRight">►</div>
 
-            <!-- Aksiyon Sembolleri -->
-            <div class="v-btn" id="btn-aim" data-key="69" data-keyname="KeyE">⊕</div>     <!-- E: Nişan -->
-            <div class="v-btn" id="btn-reload" data-key="82" data-keyname="KeyR">⟳</div>  <!-- R: Reload -->
-            <div class="v-btn" id="btn-shoot" data-key="32" data-keyname="Space">⚔</div>  <!-- SPACE: Ateş -->
-            <div class="v-btn" id="btn-shift" data-key="16" data-keyname="ShiftLeft">»</div> <!-- SHIFT: Koşma -->
+            <!-- Aksiyon Tuşları -->
+            <div class="v-btn" id="btn-aim" data-key="69" data-keyname="KeyE">⊕</div>
+            <div class="v-btn" id="btn-reload" data-key="82" data-keyname="KeyR">⟳</div>
+            <div class="v-btn" id="btn-shoot" data-key="32" data-keyname="Space">⚔</div>
+            <div class="v-btn" id="btn-shift" data-key="16" data-keyname="ShiftLeft">»</div>
         </div>
 
+        <!-- RPG Maker Temel Kütüphaneleri -->
         <script type="text/javascript" src="js/libs/pixi.js"></script>
         <script type="text/javascript" src="js/libs/pixi-tilemap.js"></script>
         <script type="text/javascript" src="js/libs/pixi-picture.js"></script>
@@ -147,27 +148,17 @@
         <script type="text/javascript" src="js/plugins.js"></script>
 
         <script type="text/javascript">
-            // SES SORUNUNU KÖKTEN ÇÖZEN DAHİLİ MOTOR YAMASI
-            (function() {
-                if (typeof Decrypter !== 'undefined') {
-                    Decrypter._hasEncryptedAudio = true;
-                    Decrypter.extToEncryptExt = function(url) {
-                        return url.replace(/\.(m4a|ogg)$/i, '.rpgmvo');
-                    };
-                }
-
-                // AudioContext Uyandırma
-                window.unlockAudioEngine = function() {
-                    if (typeof WebAudio !== 'undefined' && WebAudio._context) {
-                        if (WebAudio._context.state === 'suspended') {
-                            WebAudio._context.resume();
-                        }
+            // SAFARİ/BRAVE MOBİL GİRDİ VE SES KİLİDİ AÇICI
+            function unlockAudio() {
+                if (typeof WebAudio !== 'undefined' && WebAudio._context) {
+                    if (WebAudio._context.state === 'suspended') {
+                        WebAudio._context.resume();
                     }
-                };
-            })();
+                }
+            }
 
             function setKeyState(keyCode, keyName, isPressed) {
-                window.unlockAudioEngine();
+                unlockAudio();
 
                 var eventType = isPressed ? 'keydown' : 'keyup';
                 var event = new KeyboardEvent(eventType, {
@@ -188,12 +179,12 @@
                 }
             }
 
-            // Multi-Touch
+            // Multi-Touch Mantığı
             var activeTouches = {};
 
             function processTouches(e) {
                 e.preventDefault();
-                window.unlockAudioEngine();
+                unlockAudio();
                 var currentPressedKeys = {};
 
                 for (var i = 0; i < e.touches.length; i++) {
@@ -229,7 +220,7 @@
             container.addEventListener('touchmove', processTouches, {passive: false});
             container.addEventListener('touchend', processTouches, {passive: false});
             container.addEventListener('touchcancel', processTouches, {passive: false});
-            window.addEventListener('click', window.unlockAudioEngine, {once: true});
+            window.addEventListener('click', unlockAudio, {once: true});
         </script>
 
         <script type="text/javascript" src="js/main.js"></script>
