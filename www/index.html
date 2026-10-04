@@ -30,7 +30,7 @@
 
         <style type="text/css">
             html, body {
-                background-color: #000000 !important; /* Arka plan tekrar siyah */
+                background-color: #000000 !important;
                 margin: 0;
                 padding: 0;
                 width: 100%;
@@ -66,64 +66,62 @@
                 font-family: sans-serif;
             }
 
-            /* Şeffaf Halka Buton Tasarımı */
+            /* İçi Tamamen Şeffaf, Sadece Beyaz İnce Halkalı Butonlar */
             .v-btn {
                 position: absolute;
                 pointer-events: auto;
-                background: rgba(255, 255, 255, 0.08) !important;
-                border: 2px solid rgba(255, 255, 255, 0.4) !important;
-                color: rgba(255, 255, 255, 0.8) !important;
+                background: transparent !important;
+                border: 1.5px solid rgba(255, 255, 255, 0.5) !important;
+                color: rgba(255, 255, 255, 0.85) !important;
                 border-radius: 50% !important;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                font-weight: bold;
+                font-weight: normal;
                 font-size: 16px;
                 box-shadow: none;
                 -webkit-tap-highlight-color: transparent;
                 box-sizing: border-box;
-                backdrop-filter: blur(2px);
             }
 
             .v-btn.active {
-                background: rgba(255, 255, 255, 0.3) !important;
+                background: rgba(255, 255, 255, 0.25) !important;
+                border-color: #ffffff !important;
                 color: #ffffff !important;
             }
 
             /* HAREKET TUŞLARI (SOL ALT D-PAD) */
             .move-btn {
-                width: 48px;
-                height: 48px;
+                width: 50px;
+                height: 50px;
                 font-size: 18px;
             }
-            #btn-move-up    { bottom: 108px; left: 58px;  }
-            #btn-move-down  { bottom: 12px;  left: 58px;  }
+            #btn-move-up    { bottom: 110px; left: 60px;  }
+            #btn-move-down  { bottom: 10px;  left: 60px;  }
             #btn-move-left  { bottom: 60px;  left: 10px;  }
-            #btn-move-right { bottom: 60px;  left: 106px; }
+            #btn-move-right { bottom: 60px;  left: 110px; }
 
-            /* SOL ÜST SİLAH DEĞİŞTİRME OKLARI (SADECE SAĞ VE SOL) */
+            /* SOL ÜST SİLAH DEĞİŞTİRME OKLARI (BİRAZ DAHA AŞAĞI ALINDI) */
             .weapon-switch-btn {
                 width: 44px;
                 height: 44px;
                 font-size: 18px;
-                border: 1px solid rgba(255, 255, 255, 0.3) !important;
             }
-            #btn-weapon-prev { top: 15px; left: 15px; }
-            #btn-weapon-next { top: 15px; left: 68px; }
+            #btn-weapon-prev { top: 60px; left: 15px; }
+            #btn-weapon-next { top: 60px; left: 68px; }
 
             /* SOL ALT EK BUTONLAR (L, LT, RT) */
-            #btn-l       { bottom: 108px; left: 170px; width: 50px; height: 50px; }
-            #btn-lt      { bottom: 48px;  left: 170px; width: 50px; height: 50px; }
-            #btn-rt-left { bottom: 48px;  left: 228px; width: 50px; height: 50px; }
+            #btn-l       { bottom: 110px; left: 175px; width: 50px; height: 50px; }
+            #btn-lt      { bottom: 50px;  left: 175px; width: 50px; height: 50px; }
+            #btn-rt-left { bottom: 50px;  left: 235px; width: 50px; height: 50px; }
 
             /* SAĞ TARAF AKSİYON TUŞLARI */
-            #btn-rt-right{ bottom: 110px; right: 110px; width: 72px; height: 72px; font-size: 20px; }
+            #btn-rt-right{ bottom: 110px; right: 110px; width: 72px; height: 72px; font-size: 22px; }
             #btn-r       { bottom: 180px; right: 80px;  width: 52px; height: 52px; }
             #btn-b       { bottom: 110px; right: 25px;  width: 52px; height: 52px; }
             #btn-a       { bottom: 45px;  right: 80px;  width: 52px; height: 52px; }
             #btn-y       { bottom: 10px;  right: 15px;  width: 52px; height: 52px; }
 
-            /* Üst Düzenleme Panelleri Gizli */
             #btn-edit, #edit-panel {
                 display: none !important;
             }
@@ -132,7 +130,7 @@
     <body>
 
         <div class="touch-controls" id="touch-controls">
-            <!-- Sol Üst: Sadece Sağ ve Sol Silah Değiştirme Okları -->
+            <!-- Sol Üst: Silah Değiştirme Okları (Biraz Daha Aşağıda) -->
             <div class="v-btn weapon-switch-btn" id="btn-weapon-prev">◄</div>
             <div class="v-btn weapon-switch-btn" id="btn-weapon-next">►</div>
 
@@ -143,16 +141,16 @@
             <div class="v-btn move-btn" id="btn-move-right" data-key="39" data-keyname="ArrowRight">►</div>
 
             <!-- Sol Yan Ek Halka Tuşlar -->
-            <div class="v-btn" id="btn-l">⎈</div>
-            <div class="v-btn" id="btn-lt">⎇</div>
-            <div class="v-btn" id="btn-rt-left">❖</div>
+            <div class="v-btn" id="btn-l">L</div>
+            <div class="v-btn" id="btn-lt">LT</div>
+            <div class="v-btn" id="btn-rt-left">RT</div>
 
             <!-- Sağ Taraf Dairesel Aksiyon Tuşları -->
             <div class="v-btn" id="btn-rt-right" data-key="32" data-keyname="Space">⚔</div>
-            <div class="v-btn" id="btn-r" data-key="82" data-keyname="KeyR">⟳</div>
-            <div class="v-btn" id="btn-b" data-key="27" data-keyname="Escape">⎋</div>
-            <div class="v-btn" id="btn-a" data-key="13" data-keyname="Enter">↵</div>
-            <div class="v-btn" id="btn-y" data-key="69" data-keyname="KeyE">⊕</div>
+            <div class="v-btn" id="btn-r" data-key="82" data-keyname="KeyR">R</div>
+            <div class="v-btn" id="btn-b" data-key="27" data-keyname="Escape">B</div>
+            <div class="v-btn" id="btn-a" data-key="13" data-keyname="Enter">A</div>
+            <div class="v-btn" id="btn-y" data-key="69" data-keyname="KeyE">Y</div>
         </div>
 
         <script type="text/javascript" src="js/libs/pixi.js"></script>
@@ -210,7 +208,7 @@
                 }
             }
 
-            // --- Sadece Sol Üstteki ◄ ve ► Okları İle 1-5 Arası Silah Geçişi ---
+            // --- Silah Değiştirme Mantığı ---
             var currentWeapon = 1;
 
             function cycleWeapon(direction) {
@@ -222,7 +220,7 @@
                     if (currentWeapon < 1) currentWeapon = 5;
                 }
                 
-                var keyCode = 48 + currentWeapon; // 49='1', 50='2', ..., 53='5'
+                var keyCode = 48 + currentWeapon;
                 var keyName = 'Digit' + currentWeapon;
 
                 setKeyState(keyCode, keyName, true);
@@ -231,51 +229,79 @@
                 }, 100);
             }
 
-            function processTouch(touch) {
-                var elem = document.elementFromPoint(touch.clientX, touch.clientY);
+            // --- Dokunma ve Kaydırma (Touchmove) Algılama ---
+            var activeTouches = {};
+
+            function getButtonFromPoint(x, y) {
+                var elem = document.elementFromPoint(x, y);
                 if (elem && elem.classList.contains('v-btn')) {
                     return elem;
                 }
                 return null;
             }
 
-            window.addEventListener('touchstart', function(e) {
+            function pressButton(btn) {
+                if (!btn || btn.classList.contains('active')) return;
+                btn.classList.add('active');
+
+                if (btn.id === 'btn-weapon-next') {
+                    cycleWeapon('next');
+                } else if (btn.id === 'btn-weapon-prev') {
+                    cycleWeapon('prev');
+                } else {
+                    var keyCode = parseInt(btn.getAttribute('data-key'));
+                    var keyName = btn.getAttribute('data-keyname');
+                    if (keyCode) setKeyState(keyCode, keyName, true);
+                }
+            }
+
+            function releaseButton(btn) {
+                if (!btn || !btn.classList.contains('active')) return;
+                btn.classList.remove('active');
+
+                var keyCode = parseInt(btn.getAttribute('data-key'));
+                var keyName = btn.getAttribute('data-keyname');
+                if (keyCode) setKeyState(keyCode, keyName, false);
+            }
+
+            function handleTouch(e) {
                 e.preventDefault();
                 unlockAudioEngine();
 
-                for (var i = 0; i < e.changedTouches.length; i++) {
-                    var touch = e.changedTouches[i];
-                    var btn = processTouch(touch);
-                    
-                    if (btn) {
-                        btn.classList.add('active');
+                var currentTouchIds = {};
 
-                        if (btn.id === 'btn-weapon-next') {
-                            cycleWeapon('next');
-                        } else if (btn.id === 'btn-weapon-prev') {
-                            cycleWeapon('prev');
-                        } else {
-                            var keyCode = parseInt(btn.getAttribute('data-key'));
-                            var keyName = btn.getAttribute('data-keyname');
-                            if (keyCode) setKeyState(keyCode, keyName, true);
+                for (var i = 0; i < e.touches.length; i++) {
+                    var touch = e.touches[i];
+                    var id = touch.identifier;
+                    var btn = getButtonFromPoint(touch.clientX, touch.clientY);
+
+                    currentTouchIds[id] = btn;
+
+                    if (activeTouches[id] !== btn) {
+                        if (activeTouches[id]) {
+                            releaseButton(activeTouches[id]);
                         }
+                        if (btn) {
+                            pressButton(btn);
+                        }
+                        activeTouches[id] = btn;
                     }
                 }
-            }, {passive: false});
 
-            window.addEventListener('touchend', function(e) {
-                e.preventDefault();
-                for (var i = 0; i < e.changedTouches.length; i++) {
-                    var touch = e.changedTouches[i];
-                    var btn = processTouch(touch);
-                    if (btn) {
-                        btn.classList.remove('active');
-                        var keyCode = parseInt(btn.getAttribute('data-key'));
-                        var keyName = btn.getAttribute('data-keyname');
-                        if (keyCode) setKeyState(keyCode, keyName, false);
+                for (var id in activeTouches) {
+                    if (!currentTouchIds[id]) {
+                        if (activeTouches[id]) {
+                            releaseButton(activeTouches[id]);
+                        }
+                        delete activeTouches[id];
                     }
                 }
-            }, {passive: false});
+            }
+
+            window.addEventListener('touchstart', handleTouch, {passive: false});
+            window.addEventListener('touchmove', handleTouch, {passive: false});
+            window.addEventListener('touchend', handleTouch, {passive: false});
+            window.addEventListener('touchcancel', handleTouch, {passive: false});
 
             window.addEventListener('click', unlockAudioEngine);
         </script>
