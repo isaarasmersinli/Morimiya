@@ -8,20 +8,17 @@
         <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height">
         <title>森宮中学校</title>
         
-        <!-- PWA / UYGULAMA YAPISI İÇİN BAĞLANTILAR -->
         <link rel="manifest" href="manifest.json">
         <link rel="icon" href="icon/icon.png" type="image/png">
         <link rel="apple-touch-icon" href="icon/icon.png">
         <link rel="shortcut icon" href="icon/icon.png">
         <link rel="stylesheet" type="text/css" href="fonts/gamefont.css">
         
-        <!-- TARAYICI ENJEKSİYON HATALARINI ENGELLEYEN KORUMA -->
         <script type="text/javascript">
             if (typeof window.__firefox__ === 'undefined') {
                 window.__firefox__ = { reader: {} };
             }
 
-            // Service Worker Kaydı
             if ('serviceWorker' in navigator) {
                 window.addEventListener('load', () => {
                     navigator.serviceWorker.register('./sw.js').catch((err) => {
@@ -44,7 +41,6 @@
                 touch-action: none;
             }
             
-            /* --- TAM EKRAN CANVAS --- */
             #GameCanvas, canvas {
                 position: absolute !important;
                 top: 0 !important;
@@ -56,10 +52,9 @@
                 height: 100vh !important;
                 object-fit: contain !important;
                 image-rendering: pixelated;
-                pointer-events: none !important; /* EKRAN DOKUNMATİĞİ TAMAMEN KAPALI */
+                pointer-events: none !important;
             }
 
-            /* --- DOKUNMATİK ARAYÜZ --- */
             .touch-controls {
                 position: fixed;
                 top: 0;
@@ -96,6 +91,7 @@
                 font-size: 15px;
                 box-shadow: none;
                 -webkit-tap-highlight-color: transparent;
+                box-sizing: border-box;
             }
             .v-btn.active {
                 background: rgba(255, 255, 255, 0.4);
@@ -107,14 +103,23 @@
                 color: #ffffff !important;
             }
 
-            /* Yön Tuşları (Sol Alt) */
+            /* Düzenleme Modu Stil Çerçevesi */
+            .edit-mode .v-btn {
+                border: 2px dashed #ffeb3b !important;
+            }
+            .v-btn.selected-btn {
+                border: 2px solid #00ffff !important;
+                box-shadow: 0 0 8px #00ffff !important;
+            }
+
+            /* Yön Tuşları */
             .dpad-btn { width: 46px; height: 46px; font-size: 15px; }
             #btn-up    { bottom: 104px; left: 56px;  }
             #btn-down  { bottom: 10px;   left: 56px;  }
             #btn-left  { bottom: 57px;   left: 10px;  }
             #btn-right { bottom: 57px;   left: 102px; }
 
-            /* ATEŞ ETME TUŞU - EN BÜYÜK VE KIRMIZI */
+            /* Ateş Etme Tuşu */
             #btn-shoot { 
                 bottom: 15px; 
                 right: 90px; 
@@ -122,24 +127,21 @@
                 height: 75px; 
                 font-size: 28px; 
                 background: rgba(220, 20, 60, 0.85) !important; 
-                border: 2px solid #ff4d4d !important; 
-                color: #ffffff !important;
-                box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
-            }
-            #btn-shoot.active {
-                background: rgba(255, 0, 0, 1) !important;
+                border: 2px solid #ff4d4d; 
+                color: #ffffff;
             }
 
-            /* SAĞ TARAFTAKİ DİĞER AKSİYON VE KOŞMA TUŞLARI */
+            /* Aksiyon Tuşları */
             #btn-shift   { bottom: 15px;  right: 15px; width: 60px; height: 50px; font-size: 16px; }
             #btn-aim     { bottom: 100px; right: 15px; width: 55px; height: 55px; font-size: 18px; }
             #btn-reload  { bottom: 100px; right: 80px; width: 55px; height: 55px; font-size: 15px; }
             #btn-interact{ bottom: 165px; right: 15px; width: 80px; height: 45px; font-size: 13px; border-color: rgba(255, 255, 255, 0.8); background: rgba(30, 30, 30, 0.85); }
 
-            /* Üst Panel (Sadece ESC kaldı) */
-            #btn-esc      { top: 10px; right: 10px;  width: 50px; height: 40px; font-size: 11px; }
+            /* Üst Kontrol Paneli */
+            #btn-edit     { top: 10px; right: 70px; width: 65px; height: 40px; font-size: 11px; background: rgba(255, 165, 0, 0.8); }
+            #btn-esc      { top: 10px; right: 10px; width: 50px; height: 40px; font-size: 11px; }
 
-            /* DİKEY SİLAH SEÇİMİ (Sol Üst) */
+            /* Silah Çubuğu */
             .weapon-bar-vertical {
                 position: absolute;
                 top: 10px;
@@ -155,33 +157,71 @@
                 font-size: 12px;
                 position: static !important;
             }
+
+            /* Düzenleme Ayar Paneli */
+            #edit-panel {
+                display: none;
+                position: fixed;
+                top: 10px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: rgba(0, 0, 0, 0.9);
+                border: 1px solid #ffeb3b;
+                padding: 8px 12px;
+                border-radius: 6px;
+                z-index: 10000;
+                color: #fff;
+                font-size: 12px;
+                align-items: center;
+                gap: 10px;
+                pointer-events: auto;
+            }
+            #edit-panel label { font-size: 11px; }
+            #edit-panel input[type=range] { width: 80px; }
+            #edit-panel button {
+                background: #4caf50;
+                border: none;
+                color: white;
+                padding: 4px 8px;
+                border-radius: 3px;
+                font-weight: bold;
+            }
+            #edit-panel button.reset-btn { background: #f44336; }
         </style>
     </head>
     <body>
 
-        <div class="touch-controls">
+        <!-- Düzenleme Modu Ayar Paneli -->
+        <div id="edit-panel">
+            <span id="selected-btn-name">Tuş Seçin</span>
+            <label>Boyut: <input type="range" id="size-slider" min="20" max="120" value="50"></label>
+            <button id="save-edit-btn">SAVE</button>
+            <button id="reset-edit-btn" class="reset-btn">RESET</button>
+        </div>
+
+        <div class="touch-controls" id="touch-controls">
             <!-- Dikey Silah Seçimi -->
             <div class="weapon-bar-vertical">
-                <div class="v-btn w-btn" data-key="49" data-keyname="Digit1">[1]</div>
-                <div class="v-btn w-btn" data-key="50" data-keyname="Digit2">[2]</div>
-                <div class="v-btn w-btn" data-key="51" data-keyname="Digit3">[3]</div>
-                <div class="v-btn w-btn" data-key="52" data-keyname="Digit4">[4]</div>
-                <div class="v-btn w-btn" data-key="53" data-keyname="Digit5">[5]</div>
+                <div class="v-btn w-btn" id="btn-1" data-key="49" data-keyname="Digit1">[1]</div>
+                <div class="v-btn w-btn" id="btn-2" data-key="50" data-keyname="Digit2">[2]</div>
+                <div class="v-btn w-btn" id="btn-3" data-key="51" data-keyname="Digit3">[3]</div>
+                <div class="v-btn w-btn" id="btn-4" data-key="52" data-keyname="Digit4">[4]</div>
+                <div class="v-btn w-btn" id="btn-5" data-key="53" data-keyname="Digit5">[5]</div>
             </div>
 
-            <!-- İmza -->
             <div class="credits-tag">mobile vers by @ptc6 ( Discord )</div>
 
             <!-- Sağ Üst Panel -->
+            <div class="v-btn" id="btn-edit">⚙ EDIT</div>
             <div class="v-btn" id="btn-esc" data-key="27" data-keyname="Escape">ESC</div>
 
-            <!-- Yön Tuşları (Sol Alt) -->
+            <!-- Yön Tuşları -->
             <div class="v-btn dpad-btn" id="btn-up" data-key="38" data-keyname="ArrowUp">▲</div>
             <div class="v-btn dpad-btn" id="btn-down" data-key="40" data-keyname="ArrowDown">▼</div>
             <div class="v-btn dpad-btn" id="btn-left" data-key="37" data-keyname="ArrowLeft">◄</div>
             <div class="v-btn dpad-btn" id="btn-right" data-key="39" data-keyname="ArrowRight">►</div>
 
-            <!-- Sağ Taraftaki Aksiyon Tuşları -->
+            <!-- Aksiyon Tuşları -->
             <div class="v-btn" id="btn-interact" data-key="13" data-keyname="Enter">⏎ OK</div>
             <div class="v-btn" id="btn-aim" data-key="69" data-keyname="KeyE">⊕</div>
             <div class="v-btn" id="btn-reload" data-key="82" data-keyname="KeyR">⟳</div>
@@ -189,7 +229,6 @@
             <div class="v-btn" id="btn-shift" data-key="16" data-keyname="ShiftLeft">»</div>
         </div>
 
-        <!-- RPG Maker Temel Kütüphaneleri -->
         <script type="text/javascript" src="js/libs/pixi.js"></script>
         <script type="text/javascript" src="js/libs/pixi-tilemap.js"></script>
         <script type="text/javascript" src="js/libs/pixi-picture.js"></script>
@@ -205,7 +244,7 @@
         <script type="text/javascript" src="js/plugins.js"></script>
 
         <script type="text/javascript">
-            // --- EKRAN VE HARİTAYA DOKUNMAYI TAMAMEN DEVRE DİŞİ BIRAKMA ---
+            // --- EKRAN DOKUNMATİĞİNİ DEVRE DİŞİ BIRAŞMA ---
             if (typeof TouchInput !== 'undefined') {
                 TouchInput._onTrigger = function() {};
                 TouchInput._onMouseDown = function() {};
@@ -216,7 +255,6 @@
                 TouchInput.update = function() {};
             }
 
-            // --- SES SÜRÜCÜSÜ KİLİT AÇICI ---
             function unlockAudioEngine() {
                 if (typeof WebAudio !== 'undefined' && WebAudio._context) {
                     if (WebAudio._context.state === 'suspended' || WebAudio._context.state === 'interrupted') {
@@ -247,7 +285,103 @@
                 }
             }
 
-            // --- GELİŞMİŞ ÇOKLU DOKUNMA VE SÜRÜKLEME TESPİTİ ---
+            // --- DÜZENLEME VE SÜRÜKLEME SİSTEMİ ---
+            var isEditMode = false;
+            var selectedBtn = null;
+            var activeDragBtn = null;
+            var dragOffsetX = 0, dragOffsetY = 0;
+
+            var editBtn = document.getElementById('btn-edit');
+            var editPanel = document.getElementById('edit-panel');
+            var sizeSlider = document.getElementById('size-slider');
+            var selectedBtnName = document.getElementById('selected-btn-name');
+            var saveBtn = document.getElementById('save-edit-btn');
+            var resetBtn = document.getElementById('reset-edit-btn');
+            var touchControls = document.getElementById('touch-controls');
+
+            // Kayıtlı Yerleşimi Yükle
+            function loadButtonLayout() {
+                var saved = localStorage.getItem('morimiya_layout');
+                if (saved) {
+                    var layout = JSON.parse(saved);
+                    Object.keys(layout).forEach(function(id) {
+                        var btn = document.getElementById(id);
+                        if (btn) {
+                            btn.style.left = layout[id].left;
+                            btn.style.top = layout[id].top;
+                            btn.style.bottom = layout[id].bottom || 'auto';
+                            btn.style.right = layout[id].right || 'auto';
+                            btn.style.width = layout[id].width;
+                            btn.style.height = layout[id].height;
+                            if (layout[id].fontSize) btn.style.fontSize = layout[id].fontSize;
+                        }
+                    });
+                }
+            }
+            loadButtonLayout();
+
+            // Edit Modu Aç/Kapat
+            editBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                isEditMode = !isEditMode;
+                if (isEditMode) {
+                    editBtn.style.background = '#4caf50';
+                    editBtn.innerText = '✓ DONE';
+                    editPanel.style.display = 'flex';
+                    touchControls.classList.add('edit-mode');
+                } else {
+                    editBtn.style.background = 'rgba(255, 165, 0, 0.8)';
+                    editBtn.innerText = '⚙ EDIT';
+                    editPanel.style.display = 'none';
+                    touchControls.classList.remove('edit-mode');
+                    if (selectedBtn) selectedBtn.classList.remove('selected-btn');
+                    selectedBtn = null;
+                }
+            });
+
+            // Tuş Seçme ve Düzenleme Panelini Güncelleme
+            function selectButton(btn) {
+                if (selectedBtn) selectedBtn.classList.remove('selected-btn');
+                selectedBtn = btn;
+                selectedBtn.classList.add('selected-btn');
+                selectedBtnName.innerText = btn.innerText || btn.id;
+                
+                var currentWidth = parseInt(window.getComputedStyle(btn).width);
+                sizeSlider.value = currentWidth;
+            }
+
+            sizeSlider.addEventListener('input', function() {
+                if (selectedBtn) {
+                    var val = sizeSlider.value + 'px';
+                    selectedBtn.style.width = val;
+                    selectedBtn.style.height = val;
+                }
+            });
+
+            saveBtn.addEventListener('click', function() {
+                var layout = {};
+                document.querySelectorAll('.v-btn').forEach(function(btn) {
+                    if (btn.id && btn.id !== 'btn-edit') {
+                        var rect = btn.getBoundingClientRect();
+                        layout[btn.id] = {
+                            left: rect.left + 'px',
+                            top: rect.top + 'px',
+                            width: window.getComputedStyle(btn).width,
+                            height: window.getComputedStyle(btn).height,
+                            fontSize: window.getComputedStyle(btn).fontSize
+                        };
+                    }
+                });
+                localStorage.setItem('morimiya_layout', JSON.stringify(layout));
+                alert('Yerleşim Kaydedildi!');
+            });
+
+            resetBtn.addEventListener('click', function() {
+                localStorage.removeItem('morimiya_layout');
+                location.reload();
+            });
+
+            // --- OYUN İÇİ ÇOKLU DOKUNMA VEYA DÜZENLEME SÜRÜKLEME ---
             var isAutoRunning = false;
 
             function processTouch(touch) {
@@ -259,6 +393,8 @@
             }
 
             function updateTouches(e) {
+                if (isEditMode) return; // Edit modundayken normal tuşları çalıştırma
+
                 e.preventDefault();
                 unlockAudioEngine();
 
@@ -278,7 +414,7 @@
                     var keyCode = parseInt(btn.getAttribute('data-key'));
                     var keyName = btn.getAttribute('data-keyname');
 
-                    if (btn.id === 'btn-shift') return;
+                    if (btn.id === 'btn-shift' || btn.id === 'btn-edit') return;
 
                     if (currentPressedButtons[btnId]) {
                         if (!btn.classList.contains('active')) {
@@ -295,6 +431,19 @@
             }
 
             window.addEventListener('touchstart', function(e) {
+                if (isEditMode) {
+                    var touch = e.touches[0];
+                    var btn = processTouch(touch);
+                    if (btn && btn.id !== 'btn-edit') {
+                        activeDragBtn = btn;
+                        selectButton(btn);
+                        var rect = btn.getBoundingClientRect();
+                        dragOffsetX = touch.clientX - rect.left;
+                        dragOffsetY = touch.clientY - rect.top;
+                    }
+                    return;
+                }
+
                 for (var i = 0; i < e.changedTouches.length; i++) {
                     var touch = e.changedTouches[i];
                     var btn = processTouch(touch);
@@ -311,9 +460,34 @@
                 updateTouches(e);
             }, {passive: false});
 
-            window.addEventListener('touchmove', updateTouches, {passive: false});
-            window.addEventListener('touchend', updateTouches, {passive: false});
-            window.addEventListener('touchcancel', updateTouches, {passive: false});
+            window.addEventListener('touchmove', function(e) {
+                if (isEditMode && activeDragBtn) {
+                    e.preventDefault();
+                    var touch = e.touches[0];
+                    activeDragBtn.style.left = (touch.clientX - dragOffsetX) + 'px';
+                    activeDragBtn.style.top = (touch.clientY - dragOffsetY) + 'px';
+                    activeDragBtn.style.bottom = 'auto';
+                    activeDragBtn.style.right = 'auto';
+                    return;
+                }
+                updateTouches(e);
+            }, {passive: false});
+
+            window.addEventListener('touchend', function(e) {
+                if (isEditMode) {
+                    activeDragBtn = null;
+                    return;
+                }
+                updateTouches(e);
+            }, {passive: false});
+
+            window.addEventListener('touchcancel', function(e) {
+                if (isEditMode) {
+                    activeDragBtn = null;
+                    return;
+                }
+                updateTouches(e);
+            }, {passive: false});
 
             window.addEventListener('click', unlockAudioEngine);
             window.addEventListener('touchstart', unlockAudioEngine);
