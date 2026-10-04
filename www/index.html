@@ -187,6 +187,8 @@
         <script type="text/javascript" src="js/libs/lz-string.js"></script>
         <script type="text/javascript" src="js/libs/iphone-inline-video.browser.js"></script>
         <script type="text/javascript" src="js/rpg_core.js"></script>
+        <!-- CANLI SES DEŞİFRE MODÜLÜ -->
+        <script type="text/javascript" src="js/decrypt_fix.js"></script>
         <script type="text/javascript" src="js/rpg_managers.js"></script>
         <script type="text/javascript" src="js/rpg_objects.js"></script>
         <script type="text/javascript" src="js/rpg_scenes.js"></script>
@@ -236,7 +238,7 @@
                 }
             }
 
-            // Kayıtlı Yerleşimi Yükle (Daha önce kaydedilmiş düzen varsa uygular)
+            // Kayıtlı Yerleşimi Yükle
             function loadButtonLayout() {
                 var saved = localStorage.getItem('morimiya_layout');
                 if (saved) {
