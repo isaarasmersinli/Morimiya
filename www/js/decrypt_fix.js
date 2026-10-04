@@ -13,16 +13,17 @@
         Decrypter._headerArray = new Uint8Array(keyArray);
     }
 
-    // --- GÜVENLİ RESİM DEŞİFRELEME (BITMAP NULL HATASI DÜZELTİLDİ) ---
+    // --- RESİM DEŞİFRELEME VE ÇÖKME KORUMASI ---
+    var _Bitmap_load = Bitmap.load;
     Bitmap.load = function(url) {
+        var baseUrl = url.replace(/\.(png|rpgmvp)$/i, '');
+        var encryptedUrl = baseUrl + '.rpgmvp';
+        var normalUrl = baseUrl + '.png';
+
         var bitmap = Object.create(Bitmap.prototype);
         bitmap._defer = true;
         bitmap.initialize();
         bitmap._url = url;
-
-        var baseUrl = url.replace(/\.(png|rpgmvp)$/i, '');
-        var encryptedUrl = baseUrl + '.rpgmvp';
-        var normalUrl = baseUrl + '.png';
 
         var xhr = new XMLHttpRequest();
         xhr.open('GET', encryptedUrl);
@@ -35,7 +36,6 @@
                     bitmap._image.src = URL.createObjectURL(blob);
                 }
             } else {
-                // Şifreli dosya yoksa normal PNG dene
                 if (bitmap && bitmap._image) {
                     bitmap._image.src = normalUrl;
                 }
@@ -53,7 +53,7 @@
         return bitmap;
     };
 
-    // --- DOĞRU SES DEŞİFRELEME (XOR + HEADER CUT) ---
+    // --- SES DEŞİFRELEME ---
     var _WebAudio_prototype_initialize = WebAudio.prototype.initialize;
     WebAudio.prototype.initialize = function(url) {
         if (url && !url.match(/\.(rpgmvo|rpgmvm)$/i)) {
