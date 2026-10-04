@@ -163,7 +163,7 @@
 
             <div class="credits-tag">mobile vers by @ptc6 ( Discord )</div>
 
-            <!-- Sağ Üst ESC -->
+            <!-- Sağ Üst Panel -->
             <div class="v-btn" id="btn-esc" data-key="27" data-keyname="Escape">ESC</div>
 
             <!-- Yön Tuşları -->
@@ -236,7 +236,28 @@
                 }
             }
 
-            // --- OYUN İÇİ ÇOKLU DOKUNMA MANTIĞI ---
+            // Kayıtlı Yerleşimi Yükle (Daha önce kaydedilmiş düzen varsa uygular)
+            function loadButtonLayout() {
+                var saved = localStorage.getItem('morimiya_layout');
+                if (saved) {
+                    var layout = JSON.parse(saved);
+                    Object.keys(layout).forEach(function(id) {
+                        var btn = document.getElementById(id);
+                        if (btn) {
+                            btn.style.left = layout[id].left;
+                            btn.style.top = layout[id].top;
+                            btn.style.bottom = layout[id].bottom || 'auto';
+                            btn.style.right = layout[id].right || 'auto';
+                            btn.style.width = layout[id].width;
+                            btn.style.height = layout[id].height;
+                            if (layout[id].fontSize) btn.style.fontSize = layout[id].fontSize;
+                        }
+                    });
+                }
+            }
+            loadButtonLayout();
+
+            // --- OYUN İÇİ ÇOKLU DOKUNMA ---
             var isAutoRunning = false;
 
             function processTouch(touch) {
