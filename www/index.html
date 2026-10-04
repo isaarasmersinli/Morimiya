@@ -37,7 +37,7 @@
                 image-rendering: pixelated;
             }
 
-            /* --- MONOKROM DOKUNMATİK ARAYÜZ --- */
+            /* --- DOKUNMATİK ARAYÜZ --- */
             .touch-controls {
                 position: fixed;
                 top: 0;
@@ -51,10 +51,11 @@
 
             .credits-tag {
                 position: absolute;
-                top: 55px;
-                left: 12px;
-                color: rgba(255, 255, 255, 0.4);
-                font-size: 10px;
+                bottom: 5px;
+                left: 50%;
+                transform: translateX(-50%);
+                color: rgba(255, 255, 255, 0.3);
+                font-size: 9px;
                 letter-spacing: 0.5px;
                 pointer-events: none;
             }
@@ -77,45 +78,55 @@
                 background: rgba(255, 255, 255, 0.4);
                 color: #000000;
             }
+            .v-btn.toggle-on {
+                background: rgba(50, 205, 50, 0.5) !important;
+                border-color: #00ff00 !important;
+                color: #ffffff !important;
+            }
 
-            /* Yön Tuşları */
-            .dpad-btn { width: 48px; height: 48px; font-size: 15px; }
-            #btn-up    { bottom: 108px; left: 58px;  }
-            #btn-down  { bottom: 10px;   left: 58px;  }
-            #btn-left  { bottom: 59px;   left: 10px;  }
-            #btn-right { bottom: 59px;   left: 106px; }
+            /* Yön Tuşları (Sol Alt) */
+            .dpad-btn { width: 46px; height: 46px; font-size: 15px; }
+            #btn-up    { bottom: 104px; left: 56px;  }
+            #btn-down  { bottom: 10px;   left: 56px;  }
+            #btn-left  { bottom: 57px;   left: 10px;  }
+            #btn-right { bottom: 57px;   left: 102px; }
+
+            /* KOŞMA TUŞU (Yön tuşlarının hemen sağ üstüne yapışık) */
+            #btn-shift { bottom: 104px; left: 102px; width: 46px; height: 46px; font-size: 14px; }
 
             /* Aksiyon Tuşları (Sağ Alt) */
             #btn-shoot { bottom: 15px; right: 85px; width: 62px; height: 62px; font-size: 20px; } /* SPACE */
             #btn-aim   { bottom: 90px; right: 20px; width: 54px; height: 54px; font-size: 18px; } /* E */
             #btn-reload{ bottom: 90px; right: 85px; width: 54px; height: 54px; font-size: 15px; } /* R */
-            #btn-shift { bottom: 15px; right: 15px; width: 54px; height: 54px; font-size: 14px; } /* SHIFT */
 
-            /* Üst Panel: ETKİLEŞİM & ESC */
-            #btn-interact { top: 10px; right: 65px; width: 95px; height: 42px; font-size: 13px; border-color: rgba(255, 255, 255, 0.8); background: rgba(30, 30, 30, 0.8); }
-            #btn-esc      { top: 10px; right: 10px; width: 48px; height: 42px; font-size: 12px; }
+            /* Üst Panel: ETKİLEŞİM, F2 (MENU) & ESC */
+            #btn-interact { top: 10px; right: 125px; width: 80px; height: 40px; font-size: 12px; border-color: rgba(255, 255, 255, 0.8); background: rgba(30, 30, 30, 0.8); }
+            #btn-f2       { top: 10px; right: 65px;  width: 55px; height: 40px; font-size: 11px; background: rgba(20, 20, 20, 0.8); }
+            #btn-esc      { top: 10px; right: 10px;  width: 50px; height: 40px; font-size: 11px; }
 
-            /* Silah Seçim Çubuğu (1, 2, 3, 4, 5) */
-            .weapon-bar {
+            /* DİKEY SİLAH SEÇİM ÇUBUĞU (Sol Üst, Alt Alta) */
+            .weapon-bar-vertical {
                 position: absolute;
                 top: 10px;
                 left: 10px;
                 display: flex;
-                gap: 5px;
+                flex-direction: column;
+                gap: 4px;
                 pointer-events: auto;
             }
             .w-btn {
-                width: 38px;
-                height: 38px;
-                font-size: 13px;
+                width: 34px;
+                height: 32px;
+                font-size: 12px;
+                position: static !important;
             }
         </style>
     </head>
     <body>
 
         <div class="touch-controls">
-            <!-- Silah Seçimi (1, 2, 3, 4, 5) -->
-            <div class="weapon-bar">
+            <!-- Dikey Silah Seçimi (Sol Üst: 1, 2, 3, 4, 5 Alt Alta) -->
+            <div class="weapon-bar-vertical">
                 <div class="v-btn w-btn" data-key="49" data-keyname="Digit1">[1]</div>
                 <div class="v-btn w-btn" data-key="50" data-keyname="Digit2">[2]</div>
                 <div class="v-btn w-btn" data-key="51" data-keyname="Digit3">[3]</div>
@@ -126,8 +137,9 @@
             <!-- İmza -->
             <div class="credits-tag">mobile vers by @ptc6 ( Discord )</div>
 
-            <!-- Sağ Üst Panel -->
+            <!-- Sağ Üst Panel: OK, F2 (Menü) & ESC -->
             <div class="v-btn" id="btn-interact" data-key="13" data-keyname="Enter">⏎ OK</div>
+            <div class="v-btn" id="btn-f2" data-key="113" data-keyname="F2">≡ MENU</div>
             <div class="v-btn" id="btn-esc" data-key="27" data-keyname="Escape">ESC</div>
 
             <!-- Yön Tuşları -->
@@ -136,11 +148,13 @@
             <div class="v-btn dpad-btn" id="btn-left" data-key="37" data-keyname="ArrowLeft">◄</div>
             <div class="v-btn dpad-btn" id="btn-right" data-key="39" data-keyname="ArrowRight">►</div>
 
+            <!-- Yön Tuşlarının Sağ Üstünde Otomatik Koşma (Toggle Shift) -->
+            <div class="v-btn" id="btn-shift" data-key="16" data-keyname="ShiftLeft">»</div>
+
             <!-- Aksiyon Tuşları -->
             <div class="v-btn" id="btn-aim" data-key="69" data-keyname="KeyE">⊕</div>
             <div class="v-btn" id="btn-reload" data-key="82" data-keyname="KeyR">⟳</div>
             <div class="v-btn" id="btn-shoot" data-key="32" data-keyname="Space">⚔</div>
-            <div class="v-btn" id="btn-shift" data-key="16" data-keyname="ShiftLeft">»</div>
         </div>
 
         <!-- RPG Maker Temel Kütüphaneleri -->
@@ -178,7 +192,6 @@
 
                 setupEncryption();
 
-                // System.json yüklendikten sonra silinmesini engeller
                 var _DataManager_setup = DataManager.setup;
                 DataManager.setup = function(data) {
                     if (_DataManager_setup) _DataManager_setup.call(this, data);
@@ -217,6 +230,26 @@
                 }
             }
 
+            // SÜREKLİ KOŞMA (TOGGLE SHIFT) MANTIĞI
+            var isAutoRunning = false;
+            var shiftBtn = document.getElementById('btn-shift');
+
+            function toggleAutoRun() {
+                isAutoRunning = !isAutoRunning;
+                setKeyState(16, 'ShiftLeft', isAutoRunning);
+                if (isAutoRunning) {
+                    shiftBtn.classList.add('toggle-on');
+                } else {
+                    shiftBtn.classList.remove('toggle-on');
+                }
+            }
+
+            shiftBtn.addEventListener('touchstart', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                toggleAutoRun();
+            }, {passive: false});
+
             // Çoklu Dokunma (Multi-Touch) İşleyicisi
             var activeTouches = {};
 
@@ -229,6 +262,9 @@
                     var touch = e.touches[i];
                     var elem = document.elementFromPoint(touch.clientX, touch.clientY);
                     
+                    // Shift tuşunu dokunma listesinden hariç tut (Toggle mantığıyla ayrı çalışacak)
+                    if (elem && elem.id === 'btn-shift') continue;
+
                     if (elem && elem.classList.contains('v-btn') && elem.hasAttribute('data-key')) {
                         var keyCode = parseInt(elem.getAttribute('data-key'));
                         var keyName = elem.getAttribute('data-keyname');
