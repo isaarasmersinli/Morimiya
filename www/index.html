@@ -56,7 +56,7 @@
                 height: 100vh !important;
                 object-fit: contain !important;
                 image-rendering: pixelated;
-                pointer-events: auto !important;
+                pointer-events: none !important; /* EKRAN DOKUNMATİĞİ TAMAMEN KAPALI */
             }
 
             /* --- DOKUNMATİK ARAYÜZ --- */
@@ -114,22 +114,32 @@
             #btn-left  { bottom: 57px;   left: 10px;  }
             #btn-right { bottom: 57px;   left: 102px; }
 
-            /* KOŞMA TUŞU */
-            #btn-shift { bottom: 120px; left: 115px; width: 44px; height: 44px; font-size: 14px; }
+            /* ATEŞ ETME TUŞU - EN BÜYÜK VE KIRMIZI */
+            #btn-shoot { 
+                bottom: 15px; 
+                right: 90px; 
+                width: 75px; 
+                height: 75px; 
+                font-size: 28px; 
+                background: rgba(220, 20, 60, 0.85) !important; 
+                border: 2px solid #ff4d4d !important; 
+                color: #ffffff !important;
+                box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+            }
+            #btn-shoot.active {
+                background: rgba(255, 0, 0, 1) !important;
+            }
 
-            /* Aksiyon Tuşları */
-            #btn-shoot { bottom: 15px; right: 85px; width: 62px; height: 62px; font-size: 20px; }
-            #btn-aim   { bottom: 90px; right: 20px; width: 54px; height: 54px; font-size: 18px; }
-            #btn-reload{ bottom: 90px; right: 85px; width: 54px; height: 54px; font-size: 15px; }
+            /* SAĞ TARAFTAKİ DİĞER AKSİYON VE KOŞMA TUŞLARI */
+            #btn-shift   { bottom: 15px;  right: 15px; width: 60px; height: 50px; font-size: 16px; }
+            #btn-aim     { bottom: 100px; right: 15px; width: 55px; height: 55px; font-size: 18px; }
+            #btn-reload  { bottom: 100px; right: 80px; width: 55px; height: 55px; font-size: 15px; }
+            #btn-interact{ bottom: 165px; right: 15px; width: 80px; height: 45px; font-size: 13px; border-color: rgba(255, 255, 255, 0.8); background: rgba(30, 30, 30, 0.85); }
 
-            /* OK TUŞU */
-            #btn-interact { bottom: 160px; right: 20px; width: 75px; height: 45px; font-size: 13px; border-color: rgba(255, 255, 255, 0.8); background: rgba(30, 30, 30, 0.85); }
-
-            /* Üst Panel */
-            #btn-f2       { top: 10px; right: 65px;  width: 55px; height: 40px; font-size: 11px; background: rgba(20, 20, 20, 0.8); }
+            /* Üst Panel (Sadece ESC kaldı) */
             #btn-esc      { top: 10px; right: 10px;  width: 50px; height: 40px; font-size: 11px; }
 
-            /* DİKEY SİLAH SEÇİMİ */
+            /* DİKEY SİLAH SEÇİMİ (Sol Üst) */
             .weapon-bar-vertical {
                 position: absolute;
                 top: 10px;
@@ -163,23 +173,20 @@
             <div class="credits-tag">mobile vers by @ptc6 ( Discord )</div>
 
             <!-- Sağ Üst Panel -->
-            <div class="v-btn" id="btn-f2" data-key="113" data-keyname="F2">≡ MENU</div>
             <div class="v-btn" id="btn-esc" data-key="27" data-keyname="Escape">ESC</div>
 
-            <!-- Yön Tuşları -->
+            <!-- Yön Tuşları (Sol Alt) -->
             <div class="v-btn dpad-btn" id="btn-up" data-key="38" data-keyname="ArrowUp">▲</div>
             <div class="v-btn dpad-btn" id="btn-down" data-key="40" data-keyname="ArrowDown">▼</div>
             <div class="v-btn dpad-btn" id="btn-left" data-key="37" data-keyname="ArrowLeft">◄</div>
             <div class="v-btn dpad-btn" id="btn-right" data-key="39" data-keyname="ArrowRight">►</div>
 
-            <!-- Otomatik Koşma -->
-            <div class="v-btn" id="btn-shift" data-key="16" data-keyname="ShiftLeft">»</div>
-
-            <!-- Aksiyon Tuşları -->
+            <!-- Sağ Taraftaki Aksiyon Tuşları -->
             <div class="v-btn" id="btn-interact" data-key="13" data-keyname="Enter">⏎ OK</div>
             <div class="v-btn" id="btn-aim" data-key="69" data-keyname="KeyE">⊕</div>
             <div class="v-btn" id="btn-reload" data-key="82" data-keyname="KeyR">⟳</div>
             <div class="v-btn" id="btn-shoot" data-key="32" data-keyname="Space">⚔</div>
+            <div class="v-btn" id="btn-shift" data-key="16" data-keyname="ShiftLeft">»</div>
         </div>
 
         <!-- RPG Maker Temel Kütüphaneleri -->
@@ -198,46 +205,18 @@
         <script type="text/javascript" src="js/plugins.js"></script>
 
         <script type="text/javascript">
-            // --- OYUN KARE EKRANINA ÖZEL DOKUNMA KOORDİNATI DÖNÜŞTÜRÜCÜSÜ ---
-            if (typeof Graphics !== 'undefined') {
-                Graphics.pageToCanvasX = function(x) {
-                    var canvas = this._canvas;
-                    if (!canvas) return 0;
-                    var rect = canvas.getBoundingClientRect();
-                    return (x - rect.left) * (canvas.width / rect.width);
-                };
-
-                Graphics.pageToCanvasY = function(y) {
-                    var canvas = this._canvas;
-                    if (!canvas) return 0;
-                    var rect = canvas.getBoundingClientRect();
-                    return (y - rect.top) * (canvas.height / rect.height);
-                };
-            }
-
+            // --- EKRAN VE HARİTAYA DOKUNMAYI TAMAMEN DEVRE DİŞİ BIRAKMA ---
             if (typeof TouchInput !== 'undefined') {
-                var originalOnTrigger = TouchInput._onTrigger;
-                TouchInput._onTrigger = function(x, y) {
-                    var canvas = document.querySelector('canvas');
-                    if (canvas) {
-                        var rect = canvas.getBoundingClientRect();
-                        // Yalnızca ortadaki oyun karesine dokunulduğunda algıla
-                        if (x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom) {
-                            var canvasX = (x - rect.left) * (canvas.width / rect.width);
-                            var canvasY = (y - rect.top) * (canvas.height / rect.height);
-                            
-                            this._x = canvasX;
-                            this._y = canvasY;
-                            this._date = Date.now();
-                            this._mousePressed = true;
-                            this._screenPressed = true;
-                            return;
-                        }
-                    }
-                };
+                TouchInput._onTrigger = function() {};
+                TouchInput._onMouseDown = function() {};
+                TouchInput._onPointerDown = function() {};
+                TouchInput._onMouseMove = function() {};
+                TouchInput._onTouchStart = function() {};
+                TouchInput._onTouchMove = function() {};
+                TouchInput.update = function() {};
             }
 
-            // --- KESİNTİSİZ SES SÜRÜCÜSÜ KİLİT AÇICI ---
+            // --- SES SÜRÜCÜSÜ KİLİT AÇICI ---
             function unlockAudioEngine() {
                 if (typeof WebAudio !== 'undefined' && WebAudio._context) {
                     if (WebAudio._context.state === 'suspended' || WebAudio._context.state === 'interrupted') {
@@ -280,22 +259,17 @@
             }
 
             function updateTouches(e) {
+                e.preventDefault();
                 unlockAudioEngine();
 
                 var currentPressedButtons = {};
-                var touchedVirtualButton = false;
 
                 for (var i = 0; i < e.touches.length; i++) {
                     var touch = e.touches[i];
                     var btn = processTouch(touch);
                     if (btn) {
-                        touchedVirtualButton = true;
                         currentPressedButtons[btn.id || btn.getAttribute('data-key')] = btn;
                     }
-                }
-
-                if (touchedVirtualButton) {
-                    e.preventDefault();
                 }
 
                 var buttons = document.querySelectorAll('.v-btn');
