@@ -91,7 +91,7 @@
             #btn-left  { bottom: 57px;   left: 10px;  }
             #btn-right { bottom: 57px;   left: 102px; }
 
-            /* KOŞMA TUŞU (Boşluklu Konum) */
+            /* KOŞMA TUŞU (Aralıklı / Mesafeli Konum) */
             #btn-shift { bottom: 120px; left: 120px; width: 44px; height: 44px; font-size: 14px; }
 
             /* Aksiyon Tuşları (Sağ Alt) */
@@ -173,36 +173,7 @@
         <script type="text/javascript" src="js/plugins.js"></script>
 
         <script type="text/javascript">
-            // SAF OVERRIDE YÖNTEMİ (Script Error Çözümü)
-            (function() {
-                var KEY = "cbf45b48176a036e58bd338a2b8f326d";
-
-                var _DataManager_isDatabaseLoaded = DataManager.isDatabaseLoaded;
-                DataManager.isDatabaseLoaded = function() {
-                    if (!_DataManager_isDatabaseLoaded.call(this)) return false;
-                    
-                    if ($dataSystem) {
-                        $dataSystem.hasEncryptedImages = true;
-                        $dataSystem.hasEncryptedAudio = true;
-                        $dataSystem.encryptionKey = KEY;
-                    }
-                    return true;
-                };
-
-                // Decrypter fonksiyonunun anahtarı her zaman doğru okumasını sağlama
-                if (typeof Decrypter !== 'undefined') {
-                    Object.defineProperty(Decrypter, 'hasEncryptedAudio', {
-                        get: function() { return true; },
-                        configurable: true
-                    });
-                    Object.defineProperty(Decrypter, 'hasEncryptedImages', {
-                        get: function() { return true; },
-                        configurable: true
-                    });
-                }
-            })();
-
-            // SES SÜRÜCÜSÜ KİLİT AÇICI
+            // SES SÜRÜCÜSÜ KİLİT AÇICI (iOS İçin)
             function unlockAudioEngine() {
                 if (typeof WebAudio !== 'undefined' && WebAudio._context) {
                     if (WebAudio._context.state === 'suspended') {
@@ -253,7 +224,7 @@
                 toggleAutoRun();
             }, {passive: false});
 
-            // Çoklu Dokunma İşleyicisi
+            // ÇOKLU DOKUNMA (MULTI-TOUCH) İŞLEYİCİSİ
             var activeTouches = {};
 
             function processTouches(e) {
