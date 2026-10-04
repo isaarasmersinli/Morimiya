@@ -13,6 +13,46 @@
         Decrypter._headerArray = new Uint8Array(keyArray);
     }
 
+    // --- GÜVENLİ RESİM DEŞİFRELEME (BITMAP NULL HATASI DÜZELTİLDİ) ---
+    Bitmap.load = function(url) {
+        var bitmap = Object.create(Bitmap.prototype);
+        bitmap._defer = true;
+        bitmap.initialize();
+        bitmap._url = url;
+
+        var baseUrl = url.replace(/\.(png|rpgmvp)$/i, '');
+        var encryptedUrl = baseUrl + '.rpgmvp';
+        var normalUrl = baseUrl + '.png';
+
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', encryptedUrl);
+        xhr.responseType = 'arraybuffer';
+        xhr.onload = function() {
+            if (xhr.status < 400) {
+                var arrayBuffer = Decrypter.decryptArrayBuffer(xhr.response);
+                var blob = new Blob([arrayBuffer], { type: 'image/png' });
+                if (bitmap && bitmap._image) {
+                    bitmap._image.src = URL.createObjectURL(blob);
+                }
+            } else {
+                // Şifreli dosya yoksa normal PNG dene
+                if (bitmap && bitmap._image) {
+                    bitmap._image.src = normalUrl;
+                }
+            }
+        };
+        xhr.onerror = function() {
+            if (bitmap && bitmap._image) {
+                bitmap._image.src = normalUrl;
+            }
+        };
+        xhr.send();
+
+        bitmap._image.onload = Bitmap.prototype._onLoad.bind(bitmap);
+        bitmap._image.onerror = Bitmap.prototype._onError.bind(bitmap);
+        return bitmap;
+    };
+
     // --- DOĞRU SES DEŞİFRELEME (XOR + HEADER CUT) ---
     var _WebAudio_prototype_initialize = WebAudio.prototype.initialize;
     WebAudio.prototype.initialize = function(url) {
@@ -34,7 +74,6 @@
             xhr.responseType = 'arraybuffer';
             xhr.onload = function() {
                 if (xhr.status < 400) {
-                    // Sesi XOR algoritmasıyla deşifre et ve düzgünce yükle
                     var decryptedBuffer = Decrypter.decryptArrayBuffer(xhr.response);
                     this._onXhrLoad(decryptedBuffer);
                 } else {
@@ -46,7 +85,6 @@
         }
     };
 
-    // RPG Maker MV Doğru ArrayBuffer Deşifre Algoritması
     Decrypter.decryptArrayBuffer = function(arrayBuffer) {
         if (!arrayBuffer) return null;
         var header = new Uint8Array(arrayBuffer, 0, 16);
@@ -61,60 +99,6 @@
             }
         }
         return body;
-        return arrayBuffer;
     };
 
-    // --- RESİM YÜKLEME ---
-    var _Bitmap_prototype_initialize = Bitmap.prototype.initialize;
-    Bitmap.prototype.initialize = function(width, height) {
-        _Bitmap_prototype_initialize.call(this, width, height);
-    };
-
-    Bitmap.load = function(url) {
-        var bitmap = Object.create(Bitmap.prototype);
-        bitmap.initialize();
-        bitmap._url = url;
-
-        var ext = url.match(/\.(png|rpgmvp)$/i);
-        var baseUrl = url.replace(/\.(png|rpgmvp)$/i, '');
-        var tryEncrypted = baseUrl + '.rpgmvp';
-
-        var tryLoad = function(targetUrl, fallbackUrl) {
-            var xhr = new XMLHttpRequest();
-            xhr.open('GET', targetUrl);
-            xhr.responseType = 'arraybuffer';
-            xhr.onload = function() {
-                if (xhr.status < 400) {
-                    if (targetUrl.endsWith('.rpgmvp')) {
-                        var arrayBuffer = Decrypter.decryptArrayBuffer(xhr.response);
-                        var blob = new Blob([arrayBuffer], { type: 'image/png' });
-                        bitmap._image.src = URL.createObjectURL(blob);
-                    } else {
-                        bitmap._image.src = targetUrl;
-                    }
-                } else if (fallbackUrl) {
-                    tryLoad(fallbackUrl, null);
-                } else {
-                    bitmap._image.src = targetUrl;
-                }
-            };
-            xhr.onerror = function() {
-                if (fallbackUrl) {
-                    tryLoad(fallbackUrl, null);
-                } else {
-                    bitmap._image.src = targetUrl;
-                }
-            };
-            xhr.send();
-        };
-
-        var lowerUrl = baseUrl.toLowerCase() + '.rpgmvp';
-        tryLoad(tryEncrypted, lowerUrl);
-
-        bitmap._image.onload = Bitmap.prototype._onLoad.bind(bitmap);
-        bitmap._image.onerror = Bitmap.prototype._onError.bind(bitmap);
-        return bitmap;
-    };
-
-    console.log("Ses/Resim canlı deşifre motoru güncellendi.");
 })();
