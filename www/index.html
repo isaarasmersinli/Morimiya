@@ -26,7 +26,7 @@
                 image-rendering: pixelated;
             }
 
-            /* --- MİNİMALİST MONOKROM ARAYÜZ --- */
+            /* --- MONOKROM DOKUNMATİK ARAYÜZ --- */
             .touch-controls {
                 position: fixed;
                 top: 0;
@@ -51,15 +51,15 @@
             .v-btn {
                 position: absolute;
                 pointer-events: auto;
-                background: rgba(0, 0, 0, 0.5);
-                border: 1px solid rgba(255, 255, 255, 0.4);
+                background: rgba(0, 0, 0, 0.6);
+                border: 1px solid rgba(255, 255, 255, 0.5);
                 color: #ffffff;
                 border-radius: 4px;
                 display: flex;
                 align-items: center;
                 justify-content: center;
                 font-weight: bold;
-                font-size: 16px;
+                font-size: 15px;
                 box-shadow: none;
             }
             .v-btn.active {
@@ -74,25 +74,27 @@
             #btn-left  { bottom: 55px;  left: 10px;  }
             #btn-right { bottom: 55px;  left: 102px; }
 
-            /* Aksiyon Tuşları */
+            /* Aksiyon Tuşları (Sağ Alt) */
             #btn-shoot { bottom: 15px; right: 80px; width: 60px; height: 60px; font-size: 20px; } /* SPACE - Vurma */
             #btn-aim   { bottom: 85px; right: 20px; width: 52px; height: 52px; font-size: 18px; } /* E - Nişan */
             #btn-reload{ bottom: 85px; right: 80px; width: 52px; height: 52px; font-size: 15px; } /* R - Reload */
             #btn-shift { bottom: 15px; right: 15px; width: 52px; height: 52px; font-size: 14px; } /* SHIFT - Koşma */
 
-            /* Üst Panel */
-            #btn-esc   { top: 10px; right: 10px; width: 44px; height: 38px; font-size: 12px; }
-            
+            /* Üst Panel & Etkileşim Tuşu */
+            #btn-interact { top: 10px; right: 65px; width: 85px; height: 42px; font-size: 13px; border-color: rgba(255, 255, 255, 0.8); background: rgba(30, 30, 30, 0.8); } /* BÜYÜK ETKİLEŞİM TUŞU */
+            #btn-esc      { top: 10px; right: 10px; width: 48px; height: 42px; font-size: 12px; }
+
+            /* Silah Seçim Çubuğu (1, 2, 3, 4, 5) */
             .weapon-bar {
                 position: absolute;
                 top: 10px;
                 left: 10px;
                 display: flex;
-                gap: 6px;
+                gap: 5px;
                 pointer-events: auto;
             }
             .w-btn {
-                width: 38px;
+                width: 36px;
                 height: 38px;
                 font-size: 13px;
             }
@@ -101,18 +103,20 @@
     <body>
 
         <div class="touch-controls">
-            <!-- Silah Seçimi (1, 2, 3, 4) -->
+            <!-- Silah Seçimi (1, 2, 3, 4, 5) -->
             <div class="weapon-bar">
                 <div class="v-btn w-btn" data-key="49" data-keyname="Digit1">[1]</div>
                 <div class="v-btn w-btn" data-key="50" data-keyname="Digit2">[2]</div>
                 <div class="v-btn w-btn" data-key="51" data-keyname="Digit3">[3]</div>
                 <div class="v-btn w-btn" data-key="52" data-keyname="Digit4">[4]</div>
+                <div class="v-btn w-btn" data-key="53" data-keyname="Digit5">[5]</div>
             </div>
 
             <!-- İmza -->
             <div class="credits-tag">mobile vers by @ptc6 ( Discord )</div>
 
-            <!-- ESC / Pause -->
+            <!-- Sağ Üst Panel: BÜYÜK ETKİLEŞİM & ESC -->
+            <div class="v-btn" id="btn-interact" data-key="13" data-keyname="Enter">⏎ OK</div>
             <div class="v-btn" id="btn-esc" data-key="27" data-keyname="Escape">ESC</div>
 
             <!-- Yön Tuşları -->
@@ -128,30 +132,42 @@
             <div class="v-btn" id="btn-shift" data-key="16" data-keyname="ShiftLeft">»</div> <!-- SHIFT: Koşma -->
         </div>
 
-        <script type="text/javascript">
-            // Mobil Ses Motoru Kilidini Açma
-            function unlockAudioEngine() {
-                if (typeof WebAudio !== 'undefined') {
-                    if (WebAudio._context && WebAudio._context.state === 'suspended') {
-                        WebAudio._context.resume();
-                    }
-                    if (WebAudio._unlocked === false && WebAudio._onTouchStart) {
-                        WebAudio._onTouchStart();
-                    }
-                }
-                if (typeof AudioManager !== 'undefined') {
-                    AudioManager.checkErrors();
-                }
-            }
+        <script type="text/javascript" src="js/libs/pixi.js"></script>
+        <script type="text/javascript" src="js/libs/pixi-tilemap.js"></script>
+        <script type="text/javascript" src="js/libs/pixi-picture.js"></script>
+        <script type="text/javascript" src="js/libs/fpsmeter.js"></script>
+        <script type="text/javascript" src="js/libs/lz-string.js"></script>
+        <script type="text/javascript" src="js/libs/iphone-inline-video.browser.js"></script>
+        <script type="text/javascript" src="js/rpg_core.js"></script>
+        <script type="text/javascript" src="js/rpg_managers.js"></script>
+        <script type="text/javascript" src="js/rpg_objects.js"></script>
+        <script type="text/javascript" src="js/rpg_scenes.js"></script>
+        <script type="text/javascript" src="js/rpg_sprites.js"></script>
+        <script type="text/javascript" src="js/rpg_windows.js"></script>
+        <script type="text/javascript" src="js/plugins.js"></script>
 
-            window.addEventListener('DOMContentLoaded', function() {
+        <script type="text/javascript">
+            // SES SORUNUNU KÖKTEN ÇÖZEN DAHİLİ MOTOR YAMASI
+            (function() {
                 if (typeof Decrypter !== 'undefined') {
                     Decrypter._hasEncryptedAudio = true;
+                    Decrypter.extToEncryptExt = function(url) {
+                        return url.replace(/\.(m4a|ogg)$/i, '.rpgmvo');
+                    };
                 }
-            });
+
+                // AudioContext Uyandırma
+                window.unlockAudioEngine = function() {
+                    if (typeof WebAudio !== 'undefined' && WebAudio._context) {
+                        if (WebAudio._context.state === 'suspended') {
+                            WebAudio._context.resume();
+                        }
+                    }
+                };
+            })();
 
             function setKeyState(keyCode, keyName, isPressed) {
-                unlockAudioEngine();
+                window.unlockAudioEngine();
 
                 var eventType = isPressed ? 'keydown' : 'keyup';
                 var event = new KeyboardEvent(eventType, {
@@ -172,12 +188,12 @@
                 }
             }
 
-            // Multi-Touch Motoru
+            // Multi-Touch
             var activeTouches = {};
 
             function processTouches(e) {
                 e.preventDefault();
-                unlockAudioEngine();
+                window.unlockAudioEngine();
                 var currentPressedKeys = {};
 
                 for (var i = 0; i < e.touches.length; i++) {
@@ -213,22 +229,9 @@
             container.addEventListener('touchmove', processTouches, {passive: false});
             container.addEventListener('touchend', processTouches, {passive: false});
             container.addEventListener('touchcancel', processTouches, {passive: false});
-            window.addEventListener('click', unlockAudioEngine, {once: true});
+            window.addEventListener('click', window.unlockAudioEngine, {once: true});
         </script>
 
-        <script type="text/javascript" src="js/libs/pixi.js"></script>
-        <script type="text/javascript" src="js/libs/pixi-tilemap.js"></script>
-        <script type="text/javascript" src="js/libs/pixi-picture.js"></script>
-        <script type="text/javascript" src="js/libs/fpsmeter.js"></script>
-        <script type="text/javascript" src="js/libs/lz-string.js"></script>
-        <script type="text/javascript" src="js/libs/iphone-inline-video.browser.js"></script>
-        <script type="text/javascript" src="js/rpg_core.js"></script>
-        <script type="text/javascript" src="js/rpg_managers.js"></script>
-        <script type="text/javascript" src="js/rpg_objects.js"></script>
-        <script type="text/javascript" src="js/rpg_scenes.js"></script>
-        <script type="text/javascript" src="js/rpg_sprites.js"></script>
-        <script type="text/javascript" src="js/rpg_windows.js"></script>
-        <script type="text/javascript" src="js/plugins.js"></script>
         <script type="text/javascript" src="js/main.js"></script>
     </body>
 </html>
