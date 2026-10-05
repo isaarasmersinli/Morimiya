@@ -77,12 +77,13 @@
                 pointer-events: none;
             }
 
+            /* Siyah / Gri Bütün Tuşlar İçin Temel Stil */
             .v-btn {
                 position: absolute;
                 pointer-events: auto;
-                background: rgba(0, 0, 0, 0.6);
-                border: 1px solid rgba(255, 255, 255, 0.5);
-                color: #ffffff;
+                background: rgba(0, 0, 0, 0.6) !important;
+                border: 1px solid rgba(255, 255, 255, 0.5) !important;
+                color: #ffffff !important;
                 border-radius: 4px;
                 display: flex;
                 align-items: center;
@@ -93,10 +94,14 @@
                 -webkit-tap-highlight-color: transparent;
                 box-sizing: border-box;
             }
+
+            /* Tuşlara Basıldığındaki Açık Gri Efekt */
             .v-btn.active {
-                background: rgba(255, 255, 255, 0.4);
-                color: #000000;
+                background: rgba(255, 255, 255, 0.4) !important;
+                color: #000000 !important;
             }
+
+            /* Sadece Koşma Tuşu Açıkken Yeşil Olacak */
             .v-btn.toggle-on {
                 background: rgba(50, 205, 50, 0.5) !important;
                 border-color: #00ff00 !important;
@@ -110,23 +115,20 @@
             #btn-left  { bottom: 57px;   left: 10px;  }
             #btn-right { bottom: 57px;   left: 102px; }
 
-            /* Ateş Etme Tuşu */
+            /* Ateş Etme Tuşu (Renk kaldırıldı, gri/siyah yapıldı) */
             #btn-shoot { 
                 bottom: 15px; 
                 right: 90px; 
                 width: 75px; 
                 height: 75px; 
                 font-size: 28px; 
-                background: rgba(220, 20, 60, 0.85) !important; 
-                border: 2px solid #ff4d4d; 
-                color: #ffffff;
             }
 
             /* Aksiyon Tuşları */
             #btn-shift   { bottom: 15px;  right: 15px; width: 60px; height: 50px; font-size: 16px; }
             #btn-aim     { bottom: 100px; right: 15px; width: 55px; height: 55px; font-size: 18px; }
             #btn-reload  { bottom: 100px; right: 80px; width: 55px; height: 55px; font-size: 15px; }
-            #btn-interact{ bottom: 165px; right: 15px; width: 80px; height: 45px; font-size: 13px; border-color: rgba(255, 255, 255, 0.8); background: rgba(30, 30, 30, 0.85); }
+            #btn-interact{ bottom: 165px; right: 15px; width: 80px; height: 45px; font-size: 13px; }
 
             /* Üst Kontrol Paneli */
             #btn-esc      { top: 10px; right: 10px; width: 50px; height: 40px; font-size: 11px; }
@@ -163,7 +165,7 @@
 
             <div class="credits-tag">mobile vers by @ptc6 ( Discord )</div>
 
-            <!-- Sağ Üst Panel -->
+            <!-- Sağ Üst ESC -->
             <div class="v-btn" id="btn-esc" data-key="27" data-keyname="Escape">ESC</div>
 
             <!-- Yön Tuşları -->
@@ -206,7 +208,17 @@
                 TouchInput.update = function() {};
             }
 
+            function unlockAudioEngine() {
+                if (typeof WebAudio !== 'undefined' && WebAudio._context) {
+                    if (WebAudio._context.state === 'suspended' || WebAudio._context.state === 'interrupted') {
+                        WebAudio._context.resume();
+                    }
+                }
+            }
+
             function setKeyState(keyCode, keyName, isPressed) {
+                unlockAudioEngine();
+
                 var eventType = isPressed ? 'keydown' : 'keyup';
                 var event = new KeyboardEvent(eventType, {
                     keyCode: keyCode,
@@ -226,28 +238,7 @@
                 }
             }
 
-            // Kayıtlı Yerleşimi Yükle
-            function loadButtonLayout() {
-                var saved = localStorage.getItem('morimiya_layout');
-                if (saved) {
-                    var layout = JSON.parse(saved);
-                    Object.keys(layout).forEach(function(id) {
-                        var btn = document.getElementById(id);
-                        if (btn) {
-                            btn.style.left = layout[id].left;
-                            btn.style.top = layout[id].top;
-                            btn.style.bottom = layout[id].bottom || 'auto';
-                            btn.style.right = layout[id].right || 'auto';
-                            btn.style.width = layout[id].width;
-                            btn.style.height = layout[id].height;
-                            if (layout[id].fontSize) btn.style.fontSize = layout[id].fontSize;
-                        }
-                    });
-                }
-            }
-            loadButtonLayout();
-
-            // --- OYUN İÇİ ÇOKLU DOKUNMA ---
+            // --- OYUN İÇİ ÇOKLU DOKUNMA MANTIĞI ---
             var isAutoRunning = false;
 
             function processTouch(touch) {
@@ -260,6 +251,7 @@
 
             function updateTouches(e) {
                 e.preventDefault();
+                unlockAudioEngine();
 
                 var currentPressedButtons = {};
 
@@ -313,6 +305,9 @@
             window.addEventListener('touchmove', updateTouches, {passive: false});
             window.addEventListener('touchend', updateTouches, {passive: false});
             window.addEventListener('touchcancel', updateTouches, {passive: false});
+
+            window.addEventListener('click', unlockAudioEngine);
+            window.addEventListener('touchstart', unlockAudioEngine);
         </script>
 
         <script type="text/javascript" src="js/main.js"></script>
